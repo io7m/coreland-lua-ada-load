@@ -1,4 +1,4 @@
--g -gnatwaleF -gnatVa -gnato
+-O3 -g -fstack-check -gnatwaleF -gnatVa -gnato
 
 The first line of this file is passed to the Ada compiler as extra flags.
 

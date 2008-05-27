@@ -14,8 +14,8 @@ UNIT_TESTS/test0007.ali UNIT_TESTS/test0007.o ctxt/bindir.o ctxt/ctxt.a \
 ctxt/dlibdir.o ctxt/incdir.o ctxt/repos.o ctxt/slibdir.o ctxt/version.o \
 deinstaller deinstaller.o inst-check inst-check.o inst-copy inst-copy.o \
 inst-dir inst-dir.o inst-link inst-link.o install_core.o install_error.o \
-installer installer.o instchk instchk.o insthier.o lua-load-conf \
-lua-load-conf.o lua-load.a lua-load.ali lua-load.o
+installer installer.o instchk instchk.o insthier.o lua-ada-load-conf \
+lua-ada-load-conf.o lua-load.a lua-load.ali lua-load.o
 
 # Mkf-deinstall
 deinstall: deinstaller inst-check inst-copy inst-dir inst-link
@@ -205,11 +205,11 @@ mk-adatype
 	./mk-adatype > conf-adatype.tmp && mv conf-adatype.tmp conf-adatype
 
 conf-cctype:\
-conf-cc conf-cc mk-cctype
+conf-cc mk-cctype
 	./mk-cctype > conf-cctype.tmp && mv conf-cctype.tmp conf-cctype
 
 conf-ldtype:\
-conf-ld conf-ld mk-ldtype
+conf-ld mk-ldtype
 	./mk-ldtype > conf-ldtype.tmp && mv conf-ldtype.tmp conf-ldtype
 
 conf-systype:\
@@ -350,13 +350,13 @@ insthier.o:\
 cc-compile insthier.c ctxt.h install.h
 	./cc-compile insthier.c
 
-lua-load-conf:\
-cc-link lua-load-conf.ld lua-load-conf.o ctxt/ctxt.a
-	./cc-link lua-load-conf lua-load-conf.o ctxt/ctxt.a
+lua-ada-load-conf:\
+cc-link lua-ada-load-conf.ld lua-ada-load-conf.o ctxt/ctxt.a
+	./cc-link lua-ada-load-conf lua-ada-load-conf.o ctxt/ctxt.a
 
-lua-load-conf.o:\
-cc-compile lua-load-conf.c ctxt.h
-	./cc-compile lua-load-conf.c
+lua-ada-load-conf.o:\
+cc-compile lua-ada-load-conf.c ctxt.h
+	./cc-compile lua-ada-load-conf.c
 
 lua-load.a:\
 cc-slib lua-load.sld lua-load.o
@@ -404,7 +404,7 @@ obj_clean:
 	ctxt/version.o deinstaller deinstaller.o inst-check inst-check.o inst-copy \
 	inst-copy.o inst-dir inst-dir.o inst-link inst-link.o install_core.o \
 	install_error.o installer installer.o instchk instchk.o insthier.o \
-	lua-load-conf lua-load-conf.o lua-load.a lua-load.ali lua-load.o
+	lua-ada-load-conf lua-ada-load-conf.o lua-load.a lua-load.ali lua-load.o
 ext_clean:
 	rm -f conf-adatype conf-cctype conf-ldtype conf-systype mk-ctxt
 
