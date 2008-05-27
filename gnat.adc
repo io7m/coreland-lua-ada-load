@@ -1,0 +1,8 @@
+
+-- ./lua-load.apk
+pragma source_file_name(lua.load, spec_file_name => "lua-load.ads");
+pragma source_file_name(lua.load, body_file_name => "lua-load.adb");
+
+-- UNIT_TESTS/test.apk
+pragma source_file_name(test, spec_file_name => "test.ads");
+pragma source_file_name(test, body_file_name => "test.adb");
