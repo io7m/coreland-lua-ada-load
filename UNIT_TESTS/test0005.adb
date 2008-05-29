@@ -8,8 +8,7 @@ begin
 
   test.load.table_start (test.loader_ptr, "x");
   declare
-    x: constant long_float :=
-      test.load.named_local_number (test.loader_ptr, "y");
+    x: constant long_float := test.load.named_local (test.loader_ptr, "y");
   begin
     io.put_line ("x.y: " & integer'image (integer (x)));
   end;

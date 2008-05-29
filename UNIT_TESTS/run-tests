@@ -5,18 +5,14 @@ lib_passed=0
 lib_failed_bad=0
 lib_tests=0
 
-echo '-- tests start --'
-for f in `cat testlist`;
-do
-  lib_tests=`expr $lib_tests + 1` >/dev/null 2>&1
-  if [ -f $f.exp ]
-  then
-    ./$f >$f.out 2>&1
-    cmp $f.out $f.exp >/dev/null 2>&1
-  else
-    ./$f >/dev/null 2>&1
-  fi
-  ret=$?
+fail()
+{
+  echo "fail: $1" 1>&2
+}
+
+check_ret()
+{
+  ret=$1
   case $ret in
     0)
       echo passed $f
@@ -31,6 +27,39 @@ do
       lib_failed_bad=`expr $lib_failed_bad + 1` >/dev/null 2>&1
       ;;
   esac
+}
+
+echo '-- tests start --'
+for f in `cat testlist`;
+do
+  lib_tests=`expr $lib_tests + 1` >/dev/null 2>&1
+  if [ -f $f.exp ]
+  then
+    ./$f 1>$f.out 2>$f.eout
+    ret=$?
+    if [ $ret -eq 0 ]
+    then
+      cmp $f.out $f.exp >/dev/null 2>&1
+      ret=$?
+      if [ $ret -eq 0 ]
+      then
+        cmp $f.eout $f.eexp >/dev/null 2>&1
+        ret=$?
+        if [ $ret -ne 0 ]
+        then
+          fail "stderr output does not match expected output"
+        fi
+      else
+        fail "stdout output does not match expected output"
+      fi
+    else
+      fail "program returned nonzero status"
+    fi
+  else
+    ./$f >/dev/null 2>&1
+    ret=$?
+  fi
+  check_ret $ret 
 done
 cat <<EOF
 -- tests end --

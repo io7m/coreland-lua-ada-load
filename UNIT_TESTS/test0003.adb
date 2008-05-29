@@ -10,7 +10,7 @@ begin
 
   declare
     x: constant su.unbounded_string :=
-      test.load.named_local_string (test.loader_ptr, "x");
+      test.load.named_local (test.loader_ptr, "x");
   begin
     io.put_line ("x: " & su.to_string (x));
   end;

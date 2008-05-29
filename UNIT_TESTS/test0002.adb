@@ -8,7 +8,7 @@ begin
 
   begin
     declare
-      x: constant long_float := test.load.named_local_number (test.loader_ptr, "x");
+      x: constant long_float := test.load.named_local (test.loader_ptr, "x");
     begin
       io.put_line ("x: " & long_float'image (x));
     end;

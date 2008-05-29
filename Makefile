@@ -10,7 +10,9 @@ UNIT_TESTS/test0003.ali UNIT_TESTS/test0003.o UNIT_TESTS/test0004 \
 UNIT_TESTS/test0004.ali UNIT_TESTS/test0004.o UNIT_TESTS/test0005 \
 UNIT_TESTS/test0005.ali UNIT_TESTS/test0005.o UNIT_TESTS/test0006 \
 UNIT_TESTS/test0006.ali UNIT_TESTS/test0006.o UNIT_TESTS/test0007 \
-UNIT_TESTS/test0007.ali UNIT_TESTS/test0007.o ctxt/bindir.o ctxt/ctxt.a \
+UNIT_TESTS/test0007.ali UNIT_TESTS/test0007.o UNIT_TESTS/test0008 \
+UNIT_TESTS/test0008.ali UNIT_TESTS/test0008.o UNIT_TESTS/test0009 \
+UNIT_TESTS/test0009.ali UNIT_TESTS/test0009.o ctxt/bindir.o ctxt/ctxt.a \
 ctxt/dlibdir.o ctxt/incdir.o ctxt/repos.o ctxt/slibdir.o ctxt/version.o \
 deinstaller deinstaller.o inst-check inst-check.o inst-copy inst-copy.o \
 inst-dir inst-dir.o inst-link inst-link.o install_core.o install_error.o \
@@ -174,6 +176,32 @@ ada-compile UNIT_TESTS/test0007.adb UNIT_TESTS/test.ads
 UNIT_TESTS/test0007.o:\
 UNIT_TESTS/test0007.ali
 
+UNIT_TESTS/test0008:\
+ada-bind ada-link UNIT_TESTS/test0008.ald UNIT_TESTS/test0008.ali \
+UNIT_TESTS/test.ali lua-load.ali
+	./ada-bind UNIT_TESTS/test0008.ali
+	./ada-link UNIT_TESTS/test0008 UNIT_TESTS/test0008.ali
+
+UNIT_TESTS/test0008.ali:\
+ada-compile UNIT_TESTS/test0008.adb UNIT_TESTS/test.ads
+	./ada-compile UNIT_TESTS/test0008.adb
+
+UNIT_TESTS/test0008.o:\
+UNIT_TESTS/test0008.ali
+
+UNIT_TESTS/test0009:\
+ada-bind ada-link UNIT_TESTS/test0009.ald UNIT_TESTS/test0009.ali \
+UNIT_TESTS/test.ali lua-load.ali
+	./ada-bind UNIT_TESTS/test0009.ali
+	./ada-link UNIT_TESTS/test0009 UNIT_TESTS/test0009.ali
+
+UNIT_TESTS/test0009.ali:\
+ada-compile UNIT_TESTS/test0009.adb UNIT_TESTS/test.ads
+	./ada-compile UNIT_TESTS/test0009.adb
+
+UNIT_TESTS/test0009.o:\
+UNIT_TESTS/test0009.ali
+
 ada-bind:\
 conf-adabind conf-systype conf-adatype conf-adafflist flags-lua-ada flags-cwd
 
@@ -211,6 +239,10 @@ conf-cc mk-cctype
 conf-ldtype:\
 conf-ld mk-ldtype
 	./mk-ldtype > conf-ldtype.tmp && mv conf-ldtype.tmp conf-ldtype
+
+conf-sosuffix:\
+mk-sosuffix
+	./mk-sosuffix > conf-sosuffix.tmp && mv conf-sosuffix.tmp conf-sosuffix
 
 conf-systype:\
 mk-systype
@@ -385,6 +417,9 @@ conf-ld conf-systype conf-cctype
 mk-mk-ctxt:\
 conf-cc
 
+mk-sosuffix:\
+conf-systype
+
 mk-systype:\
 conf-cc
 
@@ -398,7 +433,9 @@ obj_clean:
 	UNIT_TESTS/test0004.ali UNIT_TESTS/test0004.o UNIT_TESTS/test0005 \
 	UNIT_TESTS/test0005.ali UNIT_TESTS/test0005.o UNIT_TESTS/test0006 \
 	UNIT_TESTS/test0006.ali UNIT_TESTS/test0006.o UNIT_TESTS/test0007 \
-	UNIT_TESTS/test0007.ali UNIT_TESTS/test0007.o ctxt/bindir.c ctxt/bindir.o \
+	UNIT_TESTS/test0007.ali UNIT_TESTS/test0007.o UNIT_TESTS/test0008 \
+	UNIT_TESTS/test0008.ali UNIT_TESTS/test0008.o UNIT_TESTS/test0009 \
+	UNIT_TESTS/test0009.ali UNIT_TESTS/test0009.o ctxt/bindir.c ctxt/bindir.o \
 	ctxt/ctxt.a ctxt/dlibdir.c ctxt/dlibdir.o ctxt/incdir.c ctxt/incdir.o \
 	ctxt/repos.c ctxt/repos.o ctxt/slibdir.c ctxt/slibdir.o ctxt/version.c \
 	ctxt/version.o deinstaller deinstaller.o inst-check inst-check.o inst-copy \
@@ -406,7 +443,7 @@ obj_clean:
 	install_error.o installer installer.o instchk instchk.o insthier.o \
 	lua-ada-load-conf lua-ada-load-conf.o lua-load.a lua-load.ali lua-load.o
 ext_clean:
-	rm -f conf-adatype conf-cctype conf-ldtype conf-systype mk-ctxt
+	rm -f conf-adatype conf-cctype conf-ldtype conf-sosuffix conf-systype mk-ctxt
 
 regen:\
 ada-srcmap ada-srcmap-all

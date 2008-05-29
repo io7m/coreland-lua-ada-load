@@ -7,10 +7,10 @@ begin
   test.init ("test0007.lua");
 
   declare
-    procedure proc (ctx: test.load.load_ptr; data: in out integer) is
-      x: constant long_float := test.load.named_local_number (ctx, "x");
-      y: constant long_float := test.load.named_local_number (ctx, "y");
-      z: constant long_float := test.load.named_local_number (ctx, "z");
+    procedure proc (ctx: test.load.load_ptr_t; data: in out integer) is
+      x: constant long_float := test.load.named_local (ctx, "x");
+      y: constant long_float := test.load.named_local (ctx, "y");
+      z: constant long_float := test.load.named_local (ctx, "z");
     begin
       io.put_line ("--");
       io.put_line
