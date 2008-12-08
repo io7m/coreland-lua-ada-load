@@ -46,8 +46,8 @@ tests_clean:
 flags-lua-ada:
 	@echo SYSDEPS lua-ada-flags run create flags-lua-ada 
 	@(cd SYSDEPS/modules/lua-ada-flags && ./run)
-libs-lua-ada:
-	@echo SYSDEPS lua-ada-libs-S run create libs-lua-ada 
+libs-lua-ada-S:
+	@echo SYSDEPS lua-ada-libs-S run create libs-lua-ada-S 
 	@(cd SYSDEPS/modules/lua-ada-libs-S && ./run)
 libs-lua-S:
 	@echo SYSDEPS lua-libs-S run create libs-lua-S 
@@ -58,7 +58,7 @@ lua-ada-flags_clean:
 	@echo SYSDEPS lua-ada-flags clean flags-lua-ada 
 	@(cd SYSDEPS/modules/lua-ada-flags && ./clean)
 lua-ada-libs-S_clean:
-	@echo SYSDEPS lua-ada-libs-S clean libs-lua-ada 
+	@echo SYSDEPS lua-ada-libs-S clean libs-lua-ada-S 
 	@(cd SYSDEPS/modules/lua-ada-libs-S && ./clean)
 lua-libs-S_clean:
 	@echo SYSDEPS lua-libs-S clean libs-lua-S 
@@ -209,7 +209,7 @@ conf-adacomp conf-adatype conf-systype conf-adacflags conf-adafflist \
 	flags-lua-ada flags-cwd
 
 ada-link:\
-conf-adalink conf-adatype conf-systype conf-aldfflist libs-lua-ada libs-cwd \
+conf-adalink conf-adatype conf-systype conf-aldfflist libs-lua-ada-S libs-cwd \
 	libs-lua-S libs-math
 
 ada-srcmap:\

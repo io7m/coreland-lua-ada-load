@@ -7,10 +7,7 @@ begin
   test.init ("test0007.lua");
 
   declare
-    procedure proc
-      (context : test.load.load_access_t;
-       data    : in out integer)
-    is
+    procedure proc (context : test.load.state_access_t) is
       x : constant long_float := test.load.named_local (context, "x");
       y : constant long_float := test.load.named_local (context, "y");
       z : constant long_float := test.load.named_local (context, "z");
@@ -23,9 +20,8 @@ begin
       io.put_line
         (test.load.name_code (test.loader_access) & ".z: " & integer'image (integer (z)));
     end proc;
-    x : integer := 0;
   begin
-    test.load.table_iterate (test.loader_access, proc'access, x);
+    test.load.table_iterate (test.loader_access, proc'access);
   end;
 
 exception

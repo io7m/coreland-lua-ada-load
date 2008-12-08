@@ -24,8 +24,8 @@ package body test is
       raise program_error;
     end if;
 
-    load.set_lua (loader_access, lua_context);
-    load.set_file (loader_access, "test.lua");
+    lua.load.set_lua (loader_access, lua_context);
+    lua.load.set_file (loader_access, "test.lua");
   end init;
 
 end test;

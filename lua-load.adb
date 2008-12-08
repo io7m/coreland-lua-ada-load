@@ -7,29 +7,29 @@ package body lua.load is
 
   -- add a name component
   procedure add_name_component
-    (context : load_access_t;
-     name    : string) is
+    (state : state_access_t;
+     name  : string) is
   begin
-    if su.length (context.name_code) /= 0 then
-      su.append (context.name_code, ".");
+    if su.length (state.name_code) /= 0 then
+      su.append (state.name_code, ".");
     end if;
-    su.append (context.name_code, name);
-    context.name_depth := context.name_depth + 1;
+    su.append (state.name_code, name);
+    state.name_depth := state.name_depth + 1;
   end add_name_component;
 
   -- remove a name component
-  procedure remove_name_component (context : load_access_t) is
-    len : constant natural := su.length (context.name_code);
-    dot : natural          := su.index (context.name_code, ".", len, s.backward);
+  procedure remove_name_component (state : state_access_t) is
+    len : constant natural := su.length (state.name_code);
+    dot : natural          := su.index (state.name_code, ".", len, s.backward);
   begin
     if dot /= 0 then dot := dot - 1; end if;
-    su.head (context.name_code, dot);
-    context.name_depth := context.name_depth - 1;
+    su.head (state.name_code, dot);
+    state.name_depth := state.name_depth - 1;
   end remove_name_component;
 
   type target_t is (target_key, target_value);
 
-  function target_name (target: target_t) return string is
+  function target_name (target : target_t) return string is
   begin
     case target is
       when target_key => return "key";
@@ -39,15 +39,15 @@ package body lua.load is
 
   -- type error
   procedure type_error
-    (context  : load_access_t;
+    (state    : state_access_t;
      target   : target_t;
      expected : lua.type_t) is
   begin
-    context.err_string := su.to_unbounded_string ("");
-    if su.length (context.name_code) /= 0 then
-      su.append (context.err_string, su.to_string (context.name_code) & ": ");
+    state.err_string := su.to_unbounded_string ("");
+    if su.length (state.name_code) /= 0 then
+      su.append (state.err_string, su.to_string (state.name_code) & ": ");
     end if;
-    su.append (context.err_string, target_name (target) & ": not a " & lua.type_name (expected));
+    su.append (state.err_string, target_name (target) & ": not a " & lua.type_name (expected));
     raise load_error;
   end;
 
@@ -55,259 +55,343 @@ package body lua.load is
   -- Public API
   --
 
-  -- set lua context
+  -- set lua state
   procedure set_lua
-    (context   : load_access_t;
+    (state     : state_access_t;
      lua_state : lua.state_t) is
   begin
-    context.lua_state := lua_state;
+    state.lua_state := lua_state;
   end set_lua;
 
   -- set filename
   procedure set_file
-    (context : load_access_t;
+    (state   : state_access_t;
      file    : string) is
   begin
-    context.name_file := su.to_unbounded_string (file);
+    state.name_file := su.to_unbounded_string (file);
   end set_file;
 
   -- get key type
-  function key_type (context: load_access_t) return lua.type_t is
+  function key_type (state : state_access_t) return lua.type_t is
   begin
-    return lua.type_of (context.lua_state, -2);
+    return lua.type_of (state.lua_state, -2);
   end key_type;
 
   -- check if key is of type key_type
   function key_type_is
-    (context : load_access_t;
-     k_type  : lua.type_t) return boolean is
+    (state  : state_access_t;
+     k_type : lua.type_t) return boolean is
   begin
-    return key_type (context) = k_type;
+    return key_type (state) = k_type;
   end key_type_is;
 
   -- get value type
-  function value_type (context: load_access_t) return lua.type_t is
+  function value_type (state : state_access_t) return lua.type_t is
   begin
-    return lua.type_of (context.lua_state, -1);
+    return lua.type_of (state.lua_state, -1);
   end value_type;
 
   -- check if value is of type value_type
   function value_type_is
-    (context : load_access_t;
-     v_type  : lua.type_t) return boolean is
+    (state  : state_access_t;
+     v_type : lua.type_t) return boolean is
   begin
-    return value_type (context) = v_type;
+    return value_type (state) = v_type;
   end value_type_is;
 
   -- get key on stack as number
-  function key (context: load_access_t) return long_float is
+  function key (state : state_access_t) return long_float is
   begin
-    if key_type_is (context, lua.t_number) = false then
-      type_error (context, target => target_key, expected => lua.t_number);
+    if key_type_is (state, lua.t_number) = false then
+      type_error
+        (state    => state,
+         target   => target_key,
+         expected => lua.t_number);
     end if;
-    return long_float (lua.to_number (context.lua_state, -2));
+    return long_float (lua.to_number (state.lua_state, -2));
+  end key;
+
+  function key (state : state_access_t) return long_integer is
+    temp_float : constant long_float := key (state);
+  begin
+    return long_integer (temp_float);
   end key;
 
   -- get key on stack as string
-  function key (context: load_access_t) return u_string is
+  function key (state : state_access_t) return ustring_t is
   begin
-    if key_type_is (context, lua.t_string) = false then
-      type_error (context, target => target_key, expected => lua.t_string);
+    if key_type_is (state, lua.t_string) = false then
+      type_error
+        (state    => state,
+         target   => target_key,
+         expected => lua.t_string);
     end if;
-    return su.to_unbounded_string (lua.to_string (context.lua_state, -2));
+    return su.to_unbounded_string (lua.to_string (state.lua_state, -2));
   end key;
 
   -- get number on stack, error on invalid type.
-  function local (context: load_access_t) return long_float is
+  function local (state : state_access_t) return long_float is
   begin
-    if value_type_is (context, lua.t_number) = false then
-      lua.pop (context.lua_state, 1);
-      type_error (context, target => target_value, expected => lua.t_number);
+    if value_type_is (state, lua.t_number) = false then
+      lua.pop (state.lua_state, 1);
+      type_error
+        (state    => state,
+         target   => target_value,
+         expected => lua.t_number);
     end if;
-    return long_float (lua.to_number (context.lua_state, -1));
+    return long_float (lua.to_number (state.lua_state, -1));
+  end local;
+
+  function local (state : state_access_t) return long_integer is
+  begin
+    if value_type_is (state, lua.t_number) = false then
+      lua.pop (state.lua_state, 1);
+      type_error
+        (state    => state,
+         target   => target_value,
+         expected => lua.t_number);
+    end if;
+    return long_integer (lua.to_number (state.lua_state, -1));
   end local;
 
   -- get number on stack, return default on nil, error on invalid type.
   function local_cond
-    (context : load_access_t;
-     default : long_float) return long_float is
+    (state   : state_access_t;
+     default : long_float := 0.0) return long_float is
   begin
-    if value_type_is (context, lua.t_nil) then
-      lua.pop (context.lua_state, 1);
+    if value_type_is (state, lua.t_nil) then
+      lua.pop (state.lua_state, 1);
       return default;
     end if;
-    return local (context);
+    return local (state);
+  end local_cond;
+
+  function local_cond
+    (state   : state_access_t;
+     default : long_integer := 0) return long_integer is
+  begin
+    return long_integer (local_cond
+      (state   => state,
+       default => long_float (default)));
   end local_cond;
 
   -- get string on stack, error on invalid type.
-  function local (context: load_access_t) return u_string is
+  function local (state : state_access_t) return ustring_t is
   begin
-    if value_type_is (context, lua.t_string) = false then
-      lua.pop (context.lua_state, 1);
-      type_error (context, target => target_value, expected => lua.t_string);
+    if value_type_is (state, lua.t_string) = false then
+      lua.pop (state.lua_state, 1);
+      type_error
+        (state    => state,
+         target   => target_value,
+         expected => lua.t_string);
     end if;
-    return su.to_unbounded_string (lua.to_string (context.lua_state, -1));
+    return su.to_unbounded_string (lua.to_string (state.lua_state, -1));
   end local;
 
   -- get string on stack, return default on nil, error on invalid type.
   function local_cond
-    (context : load_access_t;
-     default : string) return u_string is
+    (state   : state_access_t;
+     default : string := "") return ustring_t is
   begin
-    if value_type_is (context, lua.t_nil) then
-      lua.pop (context.lua_state, 1);
+    if value_type_is (state, lua.t_nil) then
+      lua.pop (state.lua_state, 1);
       return su.to_unbounded_string (default);
     end if;
-    return local (context);
+    return local (state);
   end local_cond;
 
   -- get named numeric field, error on invalid type.
   function named_local
-    (context : load_access_t;
-     name    : string) return long_float is
+    (state : state_access_t;
+     name  : string) return long_float is
   begin
-    lua.get_field (context.lua_state, -1, name);
-    if value_type_is (context, lua.t_number) = false then
-      lua.pop (context.lua_state, 1);
-      type_error (context, target => target_value, expected => lua.t_number);
+    lua.get_field (state.lua_state, -1, name);
+    if value_type_is (state, lua.t_number) = false then
+      lua.pop (state.lua_state, 1);
+      type_error
+        (state    => state,
+         target   => target_value,
+         expected => lua.t_number);
     end if;
     declare
-      num: constant long_float := long_float (lua.to_number (context.lua_state, -1));
+      num : constant long_float :=
+        long_float (lua.to_number (state.lua_state, -1));
     begin
-      lua.pop (context.lua_state, 1);
+      lua.pop (state.lua_state, 1);
       return num;
     end;
   end named_local;
 
+  function named_local
+    (state   : state_access_t;
+     name    : string) return long_integer
+  is
+    temp_float : constant long_float := (named_local
+      (state => state,
+       name  => name));
+  begin
+    return long_integer (temp_float);
+  end named_local;
+
   -- get named numeric field if defined, return default on nil, error on other type
   function named_local_cond
-    (context : load_access_t;
+    (state   : state_access_t;
      name    : string;
-     default : long_float) return long_float is
+     default : long_float := 0.0) return long_float is
   begin
-    lua.get_field (context.lua_state, -1, name);
+    lua.get_field (state.lua_state, -1, name);
 
-    if value_type_is (context, lua.t_nil) then
-      lua.pop (context.lua_state, 1);
+    if value_type_is (state, lua.t_nil) then
+      lua.pop (state.lua_state, 1);
       return default;
     end if;
 
-    if value_type_is (context, lua.t_number) = false then
-      lua.pop (context.lua_state, 1);
-      type_error (context, target => target_value, expected => lua.t_number);
+    if value_type_is (state, lua.t_number) = false then
+      lua.pop (state.lua_state, 1);
+      type_error
+        (state    => state,
+         target   => target_value,
+         expected => lua.t_number);
     end if;
 
     declare
-      num: constant long_float := long_float (lua.to_number (context.lua_state, -1));
+      num : constant long_float :=
+        long_float (lua.to_number (state.lua_state, -1));
     begin
-      lua.pop (context.lua_state, 1);
+      lua.pop (state.lua_state, 1);
       return num;
     end;
   end named_local_cond;
 
+  function named_local_cond
+    (state   : state_access_t;
+     name    : string;
+     default : long_integer := 0) return long_integer is
+  begin
+    return long_integer (named_local_cond
+      (state   => state,
+       name    => name,
+       default => long_float (default)));
+  end named_local_cond;
+
   -- get named string field, error on other type.
   function named_local
-    (context : load_access_t;
-     name    : string) return u_string is
+    (state : state_access_t;
+     name  : string) return ustring_t is
   begin
-    lua.get_field (context.lua_state, -1, name);
+    lua.get_field (state.lua_state, -1, name);
 
-    if value_type_is (context, lua.t_string) = false then
-      lua.pop (context.lua_state, 1);
-      type_error (context, target => target_value, expected => lua.t_string);
+    if value_type_is (state, lua.t_string) = false then
+      lua.pop (state.lua_state, 1);
+      type_error
+        (state    => state,
+         target   => target_value,
+         expected => lua.t_string);
     end if;
 
     declare
-      str: constant string := lua.to_string (context.lua_state, -1);
-      us: constant u_string := su.to_unbounded_string (str);
+      str : constant string := lua.to_string (state.lua_state, -1);
+      us  : constant ustring_t := su.to_unbounded_string (str);
     begin
-      lua.pop (context.lua_state, 1);
+      lua.pop (state.lua_state, 1);
       return us;
     end;
   end named_local;
 
   -- get string if defined, error on other type
   function named_local_cond
-    (context : load_access_t;
+    (state   : state_access_t;
      name    : string;
-     default : string) return u_string is
+     default : string := "") return ustring_t is
   begin
-    lua.get_field (context.lua_state, -1, name);
+    lua.get_field (state.lua_state, -1, name);
 
-    if value_type_is (context, lua.t_nil) then
-      lua.pop (context.lua_state, 1);
+    if value_type_is (state, lua.t_nil) then
+      lua.pop (state.lua_state, 1);
       return su.to_unbounded_string (default);
     end if;
 
-    if value_type_is (context, lua.t_string) = false then
-      lua.pop (context.lua_state, 1);
-      type_error (context, target => target_value, expected => lua.t_string);
+    if value_type_is (state, lua.t_string) = false then
+      lua.pop (state.lua_state, 1);
+      type_error
+        (state    => state,
+         target   => target_value,
+         expected => lua.t_string);
     end if;
 
     declare
-      str: constant string := lua.to_string (context.lua_state, -1);
-      us: constant u_string := su.to_unbounded_string (str);
+      str : constant string := lua.to_string (state.lua_state, -1);
+      us  : constant ustring_t := su.to_unbounded_string (str);
     begin
-      lua.pop (context.lua_state, 1);
+      lua.pop (state.lua_state, 1);
       return us;
     end;
   end named_local_cond;
 
   -- push table 'name' onto stack
   procedure table_start
-    (context : load_access_t;
-     name    : string) is
+    (state : state_access_t;
+     name  : string) is
   begin
-    lua.get_field (context.lua_state, -1, name);
-    if value_type_is (context, lua.t_table) = false then
-      type_error (context, target => target_value, expected => lua.t_table);
+    lua.get_field (state.lua_state, -1, name);
+    if value_type_is (state, lua.t_table) = false then
+      type_error
+        (state    => state,
+         target   => target_value,
+         expected => lua.t_table);
     end if;
-    add_name_component (context, name);
+    add_name_component (state, name);
   end table_start;
 
   -- remove table from stack
-  procedure table_end (context: load_access_t) is
+  procedure table_end (state : state_access_t) is
   begin
-    if value_type_is (context, lua.t_table) = false then
-      type_error (context, target => target_value, expected => lua.t_table);
+    if value_type_is (state, lua.t_table) = false then
+      type_error
+        (state    => state,
+         target   => target_value,
+         expected => lua.t_table);
     end if;
-    remove_name_component (context);
-    lua.pop (context.lua_state, 1);
+    remove_name_component (state);
+    lua.pop (state.lua_state, 1);
   end table_end;
 
   -- iterate over table, calling proc for each value
   procedure table_iterate
-    (context : load_access_t;
-     proc    : not null access procedure (context: load_access_t; data: in out udata);
-     data    : in out udata)
+    (state : state_access_t;
+     proc  : not null access procedure
+       (state : state_access_t))
   is
     findex : long_float;
     index  : integer;
     added  : boolean;
   begin
-    if value_type_is (context, lua.t_table) = false then
-      type_error (context, target => target_value, expected => lua.t_table);
+    if value_type_is (state, lua.t_table) = false then
+      type_error
+        (state    => state,
+         target   => target_value,
+         expected => lua.t_table);
     end if;
  
     -- iterate over table keys
-    lua.push_nil (context.lua_state);
-    while (lua.next (context.lua_state, -2) /= 0) loop
+    lua.push_nil (state.lua_state);
+    while (lua.next (state.lua_state, -2) /= 0) loop
       added := false;
 
       -- build string name based on key type and value
-      case key_type (context) is
+      case key_type (state) is
         when lua.t_number =>
-          findex := key (context);
+          findex := key (state);
           index := integer (findex);
           declare
             str : constant string :=
               "[" & sf.trim (integer'image (index), s.left) & "]";
           begin
-            add_name_component (context, str);
+            add_name_component (state, str);
             added := true;
           end;
         when lua.t_string =>
-          add_name_component (context, su.to_string (key (context)));
+          add_name_component (state, su.to_string (key (state)));
           added := true;
         when others =>
           null;
@@ -315,28 +399,28 @@ package body lua.load is
 
       -- call proc ()
       begin
-        proc (context, data);
+        proc (state);
       exception
         when load_error =>
-          if added then remove_name_component (context); end if;
+          if added then remove_name_component (state); end if;
           raise;
       end;
 
-      if added then remove_name_component (context); end if;
-      lua.pop (context.lua_state, 1);
+      if added then remove_name_component (state); end if;
+      lua.pop (state.lua_state, 1);
     end loop;
   end table_iterate;
 
   -- return error string
 
-  function error_string (context : load_access_t) return string is
+  function error_string (state : state_access_t) return string is
   begin
-    return su.to_string (context.err_string);
+    return su.to_string (state.err_string);
   end error_string;
 
-  function name_code (context : load_access_t) return string is
+  function name_code (state : state_access_t) return string is
   begin
-    return su.to_string (context.name_code);
+    return su.to_string (state.name_code);
   end name_code;
 
 end lua.load;
