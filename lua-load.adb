@@ -7,8 +7,8 @@ package body lua.load is
 
   -- add a name component
   procedure add_name_component
-    (state : state_access_t;
-     name  : string) is
+    (state : in state_access_t;
+     name  : in string) is
   begin
     if su.length (state.name_code) /= 0 then
       su.append (state.name_code, ".");
@@ -18,7 +18,7 @@ package body lua.load is
   end add_name_component;
 
   -- remove a name component
-  procedure remove_name_component (state : state_access_t) is
+  procedure remove_name_component (state : in state_access_t) is
     len : constant natural := su.length (state.name_code);
     dot : natural          := su.index (state.name_code, ".", len, s.backward);
   begin
@@ -29,7 +29,7 @@ package body lua.load is
 
   type target_t is (target_key, target_value);
 
-  function target_name (target : target_t) return string is
+  function target_name (target : in target_t) return string is
   begin
     case target is
       when target_key => return "key";
@@ -39,16 +39,21 @@ package body lua.load is
 
   -- type error
   procedure type_error
-    (state    : state_access_t;
-     target   : target_t;
-     expected : lua.type_t) is
+    (state    : in state_access_t;
+     target   : in target_t;
+     expected : in lua.type_t;
+     name     : in string := "") is
   begin
     state.err_string := su.to_unbounded_string ("");
     if su.length (state.name_code) /= 0 then
       su.append (state.err_string, su.to_string (state.name_code) & ": ");
     end if;
-    su.append (state.err_string, target_name (target) & ": not a " & lua.type_name (expected));
-    raise load_error;
+    if name /= "" then
+      su.append (state.err_string, name & ": ");
+    end if;
+    su.append (state.err_string,
+      target_name (target) & ": not a " & lua.type_name (expected));
+    raise load_error with su.to_string (state.err_string);
   end;
 
   --
@@ -57,50 +62,50 @@ package body lua.load is
 
   -- set lua state
   procedure set_lua
-    (state     : state_access_t;
-     lua_state : lua.state_t) is
+    (state     : in state_access_t;
+     lua_state : in lua.state_t) is
   begin
     state.lua_state := lua_state;
   end set_lua;
 
   -- set filename
   procedure set_file
-    (state   : state_access_t;
-     file    : string) is
+    (state   : in state_access_t;
+     file    : in string) is
   begin
     state.name_file := su.to_unbounded_string (file);
   end set_file;
 
   -- get key type
-  function key_type (state : state_access_t) return lua.type_t is
+  function key_type (state : in state_access_t) return lua.type_t is
   begin
     return lua.type_of (state.lua_state, -2);
   end key_type;
 
   -- check if key is of type key_type
   function key_type_is
-    (state  : state_access_t;
-     k_type : lua.type_t) return boolean is
+    (state  : in state_access_t;
+     k_type : in lua.type_t) return boolean is
   begin
     return key_type (state) = k_type;
   end key_type_is;
 
   -- get value type
-  function value_type (state : state_access_t) return lua.type_t is
+  function value_type (state : in state_access_t) return lua.type_t is
   begin
     return lua.type_of (state.lua_state, -1);
   end value_type;
 
   -- check if value is of type value_type
   function value_type_is
-    (state  : state_access_t;
-     v_type : lua.type_t) return boolean is
+    (state  : in state_access_t;
+     v_type : in lua.type_t) return boolean is
   begin
     return value_type (state) = v_type;
   end value_type_is;
 
   -- get key on stack as number
-  function key (state : state_access_t) return long_float is
+  function key (state : in state_access_t) return long_float is
   begin
     if key_type_is (state, lua.t_number) = false then
       type_error
@@ -111,14 +116,14 @@ package body lua.load is
     return long_float (lua.to_number (state.lua_state, -2));
   end key;
 
-  function key (state : state_access_t) return long_integer is
+  function key (state : in state_access_t) return long_integer is
     temp_float : constant long_float := key (state);
   begin
     return long_integer (temp_float);
   end key;
 
   -- get key on stack as string
-  function key (state : state_access_t) return ustring_t is
+  function key (state : in state_access_t) return ustring_t is
   begin
     if key_type_is (state, lua.t_string) = false then
       type_error
@@ -130,7 +135,7 @@ package body lua.load is
   end key;
 
   -- get number on stack, error on invalid type.
-  function local (state : state_access_t) return long_float is
+  function local (state : in state_access_t) return long_float is
   begin
     if value_type_is (state, lua.t_number) = false then
       lua.pop (state.lua_state, 1);
@@ -142,7 +147,7 @@ package body lua.load is
     return long_float (lua.to_number (state.lua_state, -1));
   end local;
 
-  function local (state : state_access_t) return long_integer is
+  function local (state : in state_access_t) return long_integer is
   begin
     if value_type_is (state, lua.t_number) = false then
       lua.pop (state.lua_state, 1);
@@ -156,8 +161,8 @@ package body lua.load is
 
   -- get number on stack, return default on nil, error on invalid type.
   function local_cond
-    (state   : state_access_t;
-     default : long_float := 0.0) return long_float is
+    (state   : in state_access_t;
+     default : in long_float := 0.0) return long_float is
   begin
     if value_type_is (state, lua.t_nil) then
       lua.pop (state.lua_state, 1);
@@ -167,8 +172,8 @@ package body lua.load is
   end local_cond;
 
   function local_cond
-    (state   : state_access_t;
-     default : long_integer := 0) return long_integer is
+    (state   : in state_access_t;
+     default : in long_integer := 0) return long_integer is
   begin
     return long_integer (local_cond
       (state   => state,
@@ -176,7 +181,7 @@ package body lua.load is
   end local_cond;
 
   -- get string on stack, error on invalid type.
-  function local (state : state_access_t) return ustring_t is
+  function local (state : in state_access_t) return ustring_t is
   begin
     if value_type_is (state, lua.t_string) = false then
       lua.pop (state.lua_state, 1);
@@ -190,8 +195,8 @@ package body lua.load is
 
   -- get string on stack, return default on nil, error on invalid type.
   function local_cond
-    (state   : state_access_t;
-     default : string := "") return ustring_t is
+    (state   : in state_access_t;
+     default : in string := "") return ustring_t is
   begin
     if value_type_is (state, lua.t_nil) then
       lua.pop (state.lua_state, 1);
@@ -202,8 +207,8 @@ package body lua.load is
 
   -- get named numeric field, error on invalid type.
   function named_local
-    (state : state_access_t;
-     name  : string) return long_float is
+    (state : in state_access_t;
+     name  : in string) return long_float is
   begin
     lua.get_field (state.lua_state, -1, name);
     if value_type_is (state, lua.t_number) = false then
@@ -211,6 +216,7 @@ package body lua.load is
       type_error
         (state    => state,
          target   => target_value,
+         name     => name,
          expected => lua.t_number);
     end if;
     declare
@@ -223,8 +229,8 @@ package body lua.load is
   end named_local;
 
   function named_local
-    (state   : state_access_t;
-     name    : string) return long_integer
+    (state   : in state_access_t;
+     name    : in string) return long_integer
   is
     temp_float : constant long_float := (named_local
       (state => state,
@@ -235,9 +241,9 @@ package body lua.load is
 
   -- get named numeric field if defined, return default on nil, error on other type
   function named_local_cond
-    (state   : state_access_t;
-     name    : string;
-     default : long_float := 0.0) return long_float is
+    (state   : in state_access_t;
+     name    : in string;
+     default : in long_float := 0.0) return long_float is
   begin
     lua.get_field (state.lua_state, -1, name);
 
@@ -251,6 +257,7 @@ package body lua.load is
       type_error
         (state    => state,
          target   => target_value,
+         name     => name,
          expected => lua.t_number);
     end if;
 
@@ -264,9 +271,9 @@ package body lua.load is
   end named_local_cond;
 
   function named_local_cond
-    (state   : state_access_t;
-     name    : string;
-     default : long_integer := 0) return long_integer is
+    (state   : in state_access_t;
+     name    : in string;
+     default : in long_integer := 0) return long_integer is
   begin
     return long_integer (named_local_cond
       (state   => state,
@@ -276,8 +283,8 @@ package body lua.load is
 
   -- get named string field, error on other type.
   function named_local
-    (state : state_access_t;
-     name  : string) return ustring_t is
+    (state : in state_access_t;
+     name  : in string) return ustring_t is
   begin
     lua.get_field (state.lua_state, -1, name);
 
@@ -286,6 +293,7 @@ package body lua.load is
       type_error
         (state    => state,
          target   => target_value,
+         name     => name,
          expected => lua.t_string);
     end if;
 
@@ -300,9 +308,9 @@ package body lua.load is
 
   -- get string if defined, error on other type
   function named_local_cond
-    (state   : state_access_t;
-     name    : string;
-     default : string := "") return ustring_t is
+    (state   : in state_access_t;
+     name    : in string;
+     default : in string := "") return ustring_t is
   begin
     lua.get_field (state.lua_state, -1, name);
 
@@ -316,6 +324,7 @@ package body lua.load is
       type_error
         (state    => state,
          target   => target_value,
+         name     => name,
          expected => lua.t_string);
     end if;
 
@@ -330,21 +339,22 @@ package body lua.load is
 
   -- push table 'name' onto stack
   procedure table_start
-    (state : state_access_t;
-     name  : string) is
+    (state : in state_access_t;
+     name  : in string) is
   begin
     lua.get_field (state.lua_state, -1, name);
     if value_type_is (state, lua.t_table) = false then
       type_error
         (state    => state,
          target   => target_value,
+         name     => name,
          expected => lua.t_table);
     end if;
     add_name_component (state, name);
   end table_start;
 
   -- remove table from stack
-  procedure table_end (state : state_access_t) is
+  procedure table_end (state : in state_access_t) is
   begin
     if value_type_is (state, lua.t_table) = false then
       type_error
@@ -358,9 +368,9 @@ package body lua.load is
 
   -- iterate over table, calling proc for each value
   procedure table_iterate
-    (state : state_access_t;
+    (state : in state_access_t;
      proc  : not null access procedure
-       (state : state_access_t))
+       (state : in state_access_t))
   is
     findex : long_float;
     index  : integer;
@@ -413,12 +423,12 @@ package body lua.load is
 
   -- return error string
 
-  function error_string (state : state_access_t) return string is
+  function error_string (state : in state_access_t) return string is
   begin
     return su.to_string (state.err_string);
   end error_string;
 
-  function name_code (state : state_access_t) return string is
+  function name_code (state : in state_access_t) return string is
   begin
     return su.to_string (state.name_code);
   end name_code;
