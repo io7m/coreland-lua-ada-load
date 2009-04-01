@@ -1,0 +1,2 @@
+This is a library to load data from <a href="http://lua.org">Lua</a>
+easily into Ada data structures.
