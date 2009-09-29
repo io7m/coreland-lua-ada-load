@@ -192,7 +192,7 @@ package body Lua.Load is
          Target   => Target_Key,
          Expected => Lua.T_String);
     end if;
-    return UB_Strings.To_Unbounded_String (Lua.To_String (State.all.Lua_State, -2));
+    return Lua.To_Unbounded_String (State.all.Lua_State, -2);
   end Key;
 
   --
@@ -260,7 +260,7 @@ package body Lua.Load is
          Target   => Target_Value,
          Expected => Lua.T_String);
     end if;
-    return UB_Strings.To_Unbounded_String (Lua.To_String (State.all.Lua_State, -1));
+    return Lua.To_Unbounded_String (State.all.Lua_State, -1);
   end Local;
 
   --
@@ -295,13 +295,8 @@ package body Lua.Load is
          Name     => Name,
          Expected => Lua.T_Number);
     end if;
-    declare
-      Number : constant Long_Float :=
-        Long_Float (Lua.To_Number (State.all.Lua_State, -1));
-    begin
-      Lua.Pop (State.all.Lua_State, 1);
-      return Number;
-    end;
+
+    return Float_From_Stack (State);
   end Named_Local;
 
   function Named_Local
@@ -341,13 +336,7 @@ package body Lua.Load is
          Expected => Lua.T_Number);
     end if;
 
-    declare
-      Number : constant Long_Float :=
-        Long_Float (Lua.To_Number (State.all.Lua_State, -1));
-    begin
-      Lua.Pop (State.all.Lua_State, 1);
-      return Number;
-    end;
+    return Float_From_Stack (State);
   end Named_Local_Conditional;
 
   function Named_Local_Conditional
@@ -380,13 +369,7 @@ package body Lua.Load is
          Expected => Lua.T_String);
     end if;
 
-    declare
-      Str : constant String    := Lua.To_String (State.all.Lua_State, -1);
-      US  : constant UString_t := UB_Strings.To_Unbounded_String (Str);
-    begin
-      Lua.Pop (State.all.Lua_State, 1);
-      return US;
-    end;
+    return String_From_Stack (State);
   end Named_Local;
 
   --
@@ -414,13 +397,7 @@ package body Lua.Load is
          Expected => Lua.T_String);
     end if;
 
-    declare
-      Str : constant String := Lua.To_String (State.all.Lua_State, -1);
-      US  : constant UString_t := UB_Strings.To_Unbounded_String (Str);
-    begin
-      Lua.Pop (State.all.Lua_State, 1);
-      return US;
-    end;
+    return String_From_Stack (State);
   end Named_Local_Conditional;
 
   --
