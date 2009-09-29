@@ -6,6 +6,29 @@ package body Lua.Load is
   package Fixed_Strings reNames Ada.Strings.Fixed;
 
   --
+  -- Return float, removing from stack.
+  --
+
+  function Float_From_Stack (State : in State_Access_t) return Long_Float is
+    Number : constant Long_Float :=
+      Long_Float (Lua.To_Number (State.all.Lua_State, -1));
+  begin
+    Lua.Pop (State.all.Lua_State, 1);
+    return Number;
+  end Float_From_Stack;
+
+  --
+  -- Return string, removing from stack.
+  --
+
+  function String_From_Stack (State : in State_Access_t) return UString_t is
+    US : constant UString_t := Lua.To_Unbounded_String (State.all.Lua_State, -1);
+  begin
+    Lua.Pop (State.all.Lua_State, 1);
+    return US;
+  end String_From_Stack;
+
+  --
   -- Add a Name component.
   --
 
@@ -399,6 +422,120 @@ package body Lua.Load is
       return US;
     end;
   end Named_Local_Conditional;
+
+  --
+  -- Indexed local retrieval.
+  --
+
+  function Indexed_Local
+    (State : in State_Access_t;
+     Index : in Long_Integer) return UString_t is
+  begin
+    Lua.Push_Integer (State.all.Lua_State, Lua.Integer_t (Index));
+    Lua.Get_Table (State.all.Lua_State, -1);
+
+    if Value_Type_Is (State, Lua.T_String) = False then
+      Lua.Pop (State.all.Lua_State, 1);
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Name     => Long_Integer'Image (Index),
+         Expected => Lua.T_String);
+    end if;
+
+    return String_From_Stack (State);
+  end Indexed_Local;
+
+  function Indexed_Local
+    (State : in State_Access_t;
+     Index : in Long_Integer) return Long_Float is
+  begin
+    Lua.Push_Integer (State.all.Lua_State, Lua.Integer_t (Index));
+    Lua.Get_Table (State.all.Lua_State, -1);
+
+    if Value_Type_Is (State, Lua.T_Number) = False then
+      Lua.Pop (State.all.Lua_State, 1);
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Name     => Long_Integer'Image (Index),
+         Expected => Lua.T_Number);
+    end if;
+
+    return Float_From_Stack (State);
+  end Indexed_Local;
+
+  function Indexed_Local
+    (State : in State_Access_t;
+     Index : in Long_Integer) return Long_Integer
+  is
+    Temp_Float : constant Long_Float := (Indexed_Local
+      (State => State,
+       Index => Index));
+  begin
+    return Long_Integer (Temp_Float);
+  end Indexed_Local;
+
+  function Indexed_Local_Conditional
+    (State   : in State_Access_t;
+     Index   : in Long_Integer;
+     Default : in String := "") return UString_t is
+  begin
+    Lua.Push_Integer (State.all.Lua_State, Lua.Integer_t (Index));
+    Lua.Get_Table (State.all.Lua_State, -1);
+
+    if Value_Type_Is (State, Lua.T_Nil) then
+      Lua.Pop (State.all.Lua_State, 1);
+      return UB_Strings.To_Unbounded_String (Default);
+    end if;
+
+    if Value_Type_Is (State, Lua.T_String) = False then
+      Lua.Pop (State.all.Lua_State, 1);
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Name     => Long_Integer'Image (Index),
+         Expected => Lua.T_String);
+    end if;
+
+    return String_From_Stack (State);
+  end Indexed_Local_Conditional;
+
+  function Indexed_Local_Conditional
+    (State   : in State_Access_t;
+     Index   : in Long_Integer;
+     Default : in Long_Float := 0.0) return Long_Float is
+  begin
+    Lua.Push_Integer (State.all.Lua_State, Lua.Integer_t (Index));
+    Lua.Get_Table (State.all.Lua_State, -1);
+
+    if Value_Type_Is (State, Lua.T_Nil) then
+      Lua.Pop (State.all.Lua_State, 1);
+      return Default;
+    end if;
+
+    if Value_Type_Is (State, Lua.T_Number) = False then
+      Lua.Pop (State.all.Lua_State, 1);
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Name     => Long_Integer'Image (Index),
+         Expected => Lua.T_Number);
+    end if;
+
+    return Float_From_Stack (State);
+  end Indexed_Local_Conditional;
+
+  function Indexed_Local_Conditional
+    (State   : in State_Access_t;
+     Index   : in Long_Integer;
+     Default : in Long_Integer := 0) return Long_Integer is
+  begin
+    return Long_Integer (Indexed_Local_Conditional
+      (State   => State,
+       Index   => Index,
+       Default => Long_Float (Default)));
+  end Indexed_Local_Conditional;
 
   --
   -- Push table 'Name' onto stack.

@@ -79,6 +79,41 @@ package Lua.Load is
      Name    : in String;
      Default : in Long_Integer := 0) return Long_Integer;
 
+  --
+  -- Indexed local retrieval.
+  --
+
+  function Indexed_Local
+    (State : in State_Access_t;
+     Index : in Long_Integer) return UString_t;
+
+  function Indexed_Local
+    (State : in State_Access_t;
+     Index : in Long_Integer) return Long_Float;
+
+  function Indexed_Local
+    (State : in State_Access_t;
+     Index : in Long_Integer) return Long_Integer;
+
+  function Indexed_Local_Conditional
+    (State   : in State_Access_t;
+     Index   : in Long_Integer;
+     Default : in String := "") return UString_t;
+
+  function Indexed_Local_Conditional
+    (State   : in State_Access_t;
+     Index   : in Long_Integer;
+     Default : in Long_Float := 0.0) return Long_Float;
+
+  function Indexed_Local_Conditional
+    (State   : in State_Access_t;
+     Index   : in Long_Integer;
+     Default : in Long_Integer := 0) return Long_Integer;
+
+  --
+  -- Current local retrieval.
+  --
+
   function Local (State : in State_Access_t) return Long_Float;
 
   function Local (State : in State_Access_t) return Long_Integer;
