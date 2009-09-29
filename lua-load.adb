@@ -409,7 +409,7 @@ package body Lua.Load is
      Index : in Long_Integer) return UString_t is
   begin
     Lua.Push_Integer (State.all.Lua_State, Lua.Integer_t (Index));
-    Lua.Get_Table (State.all.Lua_State, -1);
+    Lua.Get_Table (State.all.Lua_State, -2);
 
     if Value_Type_Is (State, Lua.T_String) = False then
       Lua.Pop (State.all.Lua_State, 1);
@@ -428,7 +428,7 @@ package body Lua.Load is
      Index : in Long_Integer) return Long_Float is
   begin
     Lua.Push_Integer (State.all.Lua_State, Lua.Integer_t (Index));
-    Lua.Get_Table (State.all.Lua_State, -1);
+    Lua.Get_Table (State.all.Lua_State, -2);
 
     if Value_Type_Is (State, Lua.T_Number) = False then
       Lua.Pop (State.all.Lua_State, 1);
@@ -459,7 +459,7 @@ package body Lua.Load is
      Default : in String := "") return UString_t is
   begin
     Lua.Push_Integer (State.all.Lua_State, Lua.Integer_t (Index));
-    Lua.Get_Table (State.all.Lua_State, -1);
+    Lua.Get_Table (State.all.Lua_State, -2);
 
     if Value_Type_Is (State, Lua.T_Nil) then
       Lua.Pop (State.all.Lua_State, 1);
@@ -484,7 +484,7 @@ package body Lua.Load is
      Default : in Long_Float := 0.0) return Long_Float is
   begin
     Lua.Push_Integer (State.all.Lua_State, Lua.Integer_t (Index));
-    Lua.Get_Table (State.all.Lua_State, -1);
+    Lua.Get_Table (State.all.Lua_State, -2);
 
     if Value_Type_Is (State, Lua.T_Nil) then
       Lua.Pop (State.all.Lua_State, 1);
