@@ -12,7 +12,8 @@ UNIT_TESTS/test0005.ali UNIT_TESTS/test0005.o UNIT_TESTS/test0006 \
 UNIT_TESTS/test0006.ali UNIT_TESTS/test0006.o UNIT_TESTS/test0007 \
 UNIT_TESTS/test0007.ali UNIT_TESTS/test0007.o UNIT_TESTS/test0008 \
 UNIT_TESTS/test0008.ali UNIT_TESTS/test0008.o UNIT_TESTS/test0009 \
-UNIT_TESTS/test0009.ali UNIT_TESTS/test0009.o ctxt/bindir.o ctxt/ctxt.a \
+UNIT_TESTS/test0009.ali UNIT_TESTS/test0009.o UNIT_TESTS/test0010 \
+UNIT_TESTS/test0010.ali UNIT_TESTS/test0010.o ctxt/bindir.o ctxt/ctxt.a \
 ctxt/dlibdir.o ctxt/incdir.o ctxt/repos.o ctxt/slibdir.o ctxt/version.o \
 deinstaller deinstaller.o install-core.o install-error.o install-posix.o \
 install-win32.o install.a installer installer.o instchk instchk.o insthier.o \
@@ -75,14 +76,11 @@ lua-libs-S_clean \
 
 
 UNIT_TESTS/test.ads:\
-lua-load.ads
+lua-load.ali
 
-UNIT_TESTS/test.ali:\
+UNIT_TESTS/test.o UNIT_TESTS/test.ali:\
 ada-compile UNIT_TESTS/test.adb UNIT_TESTS/test.ads
 	./ada-compile UNIT_TESTS/test.adb
-
-UNIT_TESTS/test.o:\
-UNIT_TESTS/test.ali
 
 UNIT_TESTS/test0001:\
 ada-bind ada-link UNIT_TESTS/test0001.ald UNIT_TESTS/test0001.ali \
@@ -90,12 +88,9 @@ UNIT_TESTS/test.ali lua-load.ali
 	./ada-bind UNIT_TESTS/test0001.ali
 	./ada-link UNIT_TESTS/test0001 UNIT_TESTS/test0001.ali
 
-UNIT_TESTS/test0001.ali:\
-ada-compile UNIT_TESTS/test0001.adb UNIT_TESTS/test.ads
+UNIT_TESTS/test0001.o UNIT_TESTS/test0001.ali:\
+ada-compile UNIT_TESTS/test0001.adb UNIT_TESTS/test.ali
 	./ada-compile UNIT_TESTS/test0001.adb
-
-UNIT_TESTS/test0001.o:\
-UNIT_TESTS/test0001.ali
 
 UNIT_TESTS/test0002:\
 ada-bind ada-link UNIT_TESTS/test0002.ald UNIT_TESTS/test0002.ali \
@@ -103,12 +98,9 @@ UNIT_TESTS/test.ali lua-load.ali
 	./ada-bind UNIT_TESTS/test0002.ali
 	./ada-link UNIT_TESTS/test0002 UNIT_TESTS/test0002.ali
 
-UNIT_TESTS/test0002.ali:\
-ada-compile UNIT_TESTS/test0002.adb UNIT_TESTS/test.ads
+UNIT_TESTS/test0002.o UNIT_TESTS/test0002.ali:\
+ada-compile UNIT_TESTS/test0002.adb UNIT_TESTS/test.ali
 	./ada-compile UNIT_TESTS/test0002.adb
-
-UNIT_TESTS/test0002.o:\
-UNIT_TESTS/test0002.ali
 
 UNIT_TESTS/test0003:\
 ada-bind ada-link UNIT_TESTS/test0003.ald UNIT_TESTS/test0003.ali \
@@ -116,12 +108,9 @@ UNIT_TESTS/test.ali lua-load.ali
 	./ada-bind UNIT_TESTS/test0003.ali
 	./ada-link UNIT_TESTS/test0003 UNIT_TESTS/test0003.ali
 
-UNIT_TESTS/test0003.ali:\
-ada-compile UNIT_TESTS/test0003.adb UNIT_TESTS/test.ads
+UNIT_TESTS/test0003.o UNIT_TESTS/test0003.ali:\
+ada-compile UNIT_TESTS/test0003.adb UNIT_TESTS/test.ali
 	./ada-compile UNIT_TESTS/test0003.adb
-
-UNIT_TESTS/test0003.o:\
-UNIT_TESTS/test0003.ali
 
 UNIT_TESTS/test0004:\
 ada-bind ada-link UNIT_TESTS/test0004.ald UNIT_TESTS/test0004.ali \
@@ -129,12 +118,9 @@ UNIT_TESTS/test.ali lua-load.ali
 	./ada-bind UNIT_TESTS/test0004.ali
 	./ada-link UNIT_TESTS/test0004 UNIT_TESTS/test0004.ali
 
-UNIT_TESTS/test0004.ali:\
-ada-compile UNIT_TESTS/test0004.adb UNIT_TESTS/test.ads
+UNIT_TESTS/test0004.o UNIT_TESTS/test0004.ali:\
+ada-compile UNIT_TESTS/test0004.adb UNIT_TESTS/test.ali
 	./ada-compile UNIT_TESTS/test0004.adb
-
-UNIT_TESTS/test0004.o:\
-UNIT_TESTS/test0004.ali
 
 UNIT_TESTS/test0005:\
 ada-bind ada-link UNIT_TESTS/test0005.ald UNIT_TESTS/test0005.ali \
@@ -142,12 +128,9 @@ UNIT_TESTS/test.ali lua-load.ali
 	./ada-bind UNIT_TESTS/test0005.ali
 	./ada-link UNIT_TESTS/test0005 UNIT_TESTS/test0005.ali
 
-UNIT_TESTS/test0005.ali:\
-ada-compile UNIT_TESTS/test0005.adb UNIT_TESTS/test.ads
+UNIT_TESTS/test0005.o UNIT_TESTS/test0005.ali:\
+ada-compile UNIT_TESTS/test0005.adb UNIT_TESTS/test.ali
 	./ada-compile UNIT_TESTS/test0005.adb
-
-UNIT_TESTS/test0005.o:\
-UNIT_TESTS/test0005.ali
 
 UNIT_TESTS/test0006:\
 ada-bind ada-link UNIT_TESTS/test0006.ald UNIT_TESTS/test0006.ali \
@@ -155,12 +138,9 @@ UNIT_TESTS/test.ali lua-load.ali
 	./ada-bind UNIT_TESTS/test0006.ali
 	./ada-link UNIT_TESTS/test0006 UNIT_TESTS/test0006.ali
 
-UNIT_TESTS/test0006.ali:\
-ada-compile UNIT_TESTS/test0006.adb UNIT_TESTS/test.ads
+UNIT_TESTS/test0006.o UNIT_TESTS/test0006.ali:\
+ada-compile UNIT_TESTS/test0006.adb UNIT_TESTS/test.ali
 	./ada-compile UNIT_TESTS/test0006.adb
-
-UNIT_TESTS/test0006.o:\
-UNIT_TESTS/test0006.ali
 
 UNIT_TESTS/test0007:\
 ada-bind ada-link UNIT_TESTS/test0007.ald UNIT_TESTS/test0007.ali \
@@ -168,12 +148,9 @@ UNIT_TESTS/test.ali lua-load.ali
 	./ada-bind UNIT_TESTS/test0007.ali
 	./ada-link UNIT_TESTS/test0007 UNIT_TESTS/test0007.ali
 
-UNIT_TESTS/test0007.ali:\
-ada-compile UNIT_TESTS/test0007.adb UNIT_TESTS/test.ads
+UNIT_TESTS/test0007.o UNIT_TESTS/test0007.ali:\
+ada-compile UNIT_TESTS/test0007.adb UNIT_TESTS/test.ali
 	./ada-compile UNIT_TESTS/test0007.adb
-
-UNIT_TESTS/test0007.o:\
-UNIT_TESTS/test0007.ali
 
 UNIT_TESTS/test0008:\
 ada-bind ada-link UNIT_TESTS/test0008.ald UNIT_TESTS/test0008.ali \
@@ -181,12 +158,9 @@ UNIT_TESTS/test.ali lua-load.ali
 	./ada-bind UNIT_TESTS/test0008.ali
 	./ada-link UNIT_TESTS/test0008 UNIT_TESTS/test0008.ali
 
-UNIT_TESTS/test0008.ali:\
-ada-compile UNIT_TESTS/test0008.adb UNIT_TESTS/test.ads
+UNIT_TESTS/test0008.o UNIT_TESTS/test0008.ali:\
+ada-compile UNIT_TESTS/test0008.adb UNIT_TESTS/test.ali
 	./ada-compile UNIT_TESTS/test0008.adb
-
-UNIT_TESTS/test0008.o:\
-UNIT_TESTS/test0008.ali
 
 UNIT_TESTS/test0009:\
 ada-bind ada-link UNIT_TESTS/test0009.ald UNIT_TESTS/test0009.ali \
@@ -194,12 +168,19 @@ UNIT_TESTS/test.ali lua-load.ali
 	./ada-bind UNIT_TESTS/test0009.ali
 	./ada-link UNIT_TESTS/test0009 UNIT_TESTS/test0009.ali
 
-UNIT_TESTS/test0009.ali:\
-ada-compile UNIT_TESTS/test0009.adb UNIT_TESTS/test.ads
+UNIT_TESTS/test0009.o UNIT_TESTS/test0009.ali:\
+ada-compile UNIT_TESTS/test0009.adb UNIT_TESTS/test.ali
 	./ada-compile UNIT_TESTS/test0009.adb
 
-UNIT_TESTS/test0009.o:\
-UNIT_TESTS/test0009.ali
+UNIT_TESTS/test0010:\
+ada-bind ada-link UNIT_TESTS/test0010.ald UNIT_TESTS/test0010.ali \
+UNIT_TESTS/test.ali lua-load.ali
+	./ada-bind UNIT_TESTS/test0010.ali
+	./ada-link UNIT_TESTS/test0010 UNIT_TESTS/test0010.ali
+
+UNIT_TESTS/test0010.o UNIT_TESTS/test0010.ali:\
+ada-compile UNIT_TESTS/test0010.adb UNIT_TESTS/test.ali
+	./ada-compile UNIT_TESTS/test0010.adb
 
 ada-bind:\
 conf-adabind conf-systype conf-adatype conf-adafflist flags-lua-ada flags-cwd
@@ -372,12 +353,9 @@ lua-load.a:\
 cc-slib lua-load.sld lua-load.o
 	./cc-slib lua-load lua-load.o
 
-lua-load.ali:\
+lua-load.o lua-load.ali:\
 ada-compile lua-load.adb lua-load.ads
 	./ada-compile lua-load.adb
-
-lua-load.o:\
-lua-load.ali
 
 mk-adatype:\
 conf-adacomp conf-systype
@@ -413,13 +391,14 @@ obj_clean:
 	UNIT_TESTS/test0006.ali UNIT_TESTS/test0006.o UNIT_TESTS/test0007 \
 	UNIT_TESTS/test0007.ali UNIT_TESTS/test0007.o UNIT_TESTS/test0008 \
 	UNIT_TESTS/test0008.ali UNIT_TESTS/test0008.o UNIT_TESTS/test0009 \
-	UNIT_TESTS/test0009.ali UNIT_TESTS/test0009.o ctxt/bindir.c ctxt/bindir.o \
+	UNIT_TESTS/test0009.ali UNIT_TESTS/test0009.o UNIT_TESTS/test0010 \
+	UNIT_TESTS/test0010.ali UNIT_TESTS/test0010.o ctxt/bindir.c ctxt/bindir.o \
 	ctxt/ctxt.a ctxt/dlibdir.c ctxt/dlibdir.o ctxt/incdir.c ctxt/incdir.o \
 	ctxt/repos.c ctxt/repos.o ctxt/slibdir.c ctxt/slibdir.o ctxt/version.c \
 	ctxt/version.o deinstaller deinstaller.o install-core.o install-error.o \
 	install-posix.o install-win32.o install.a installer installer.o instchk \
-	instchk.o insthier.o lua-ada-load-conf lua-ada-load-conf.o lua-load.a \
-	lua-load.ali lua-load.o
+	instchk.o insthier.o lua-ada-load-conf lua-ada-load-conf.o lua-load.a
+	rm -f lua-load.ali lua-load.o
 ext_clean:
 	rm -f conf-adatype conf-cctype conf-ldtype conf-sosuffix conf-systype mk-ctxt
 
