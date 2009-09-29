@@ -1,31 +1,31 @@
-with ada.text_io;
-with test;
+with Ada.Text_IO;
+with Test;
 
 procedure test0007 is
-  package io renames ada.text_io;
+  package IO renames Ada.Text_IO;
 begin
-  test.init ("test0007.lua");
+  Test.Init ("test0007.lua");
 
   declare
-    procedure proc (context : test.load.state_access_t) is
-      x : constant long_float := test.load.named_local (context, "x");
-      y : constant long_float := test.load.named_local (context, "y");
-      z : constant long_float := test.load.named_local (context, "z");
+    procedure Process (Context : Test.Load.State_Access_t) is
+      x : constant Long_Float := Test.Load.Named_Local (Context, "x");
+      y : constant Long_Float := Test.Load.Named_Local (Context, "y");
+      z : constant Long_Float := Test.Load.Named_Local (Context, "z");
     begin
-      io.put_line ("--");
-      io.put_line
-        (test.load.name_code (test.loader_access) & ".x: " & integer'image (integer (x)));
-      io.put_line
-        (test.load.name_code (test.loader_access) & ".y: " & integer'image (integer (y)));
-      io.put_line
-        (test.load.name_code (test.loader_access) & ".z: " & integer'image (integer (z)));
-    end proc;
+      IO.Put_Line ("--");
+      IO.Put_Line
+        (Test.Load.Name_Code (Test.Loader_Access) & ".x: " & Integer'Image (Integer (x)));
+      IO.Put_Line
+        (Test.Load.Name_Code (Test.Loader_Access) & ".y: " & Integer'Image (Integer (y)));
+      IO.Put_Line
+        (Test.Load.Name_Code (Test.Loader_Access) & ".z: " & Integer'Image (Integer (z)));
+    end Process;
   begin
-    test.load.table_iterate (test.loader_access, proc'access);
+    Test.Load.Table_Iterate (Test.Loader_Access, Process'Access);
   end;
 
 exception
-  when test.load.load_error =>
-    io.put_line ("fail: " & test.load.error_string (test.loader_access));
-    raise test.load.load_error;
+  when Test.Load.Load_Error =>
+    IO.Put_Line ("fail: " & Test.Load.Error_String (Test.Loader_Access));
+    raise Test.Load.Load_Error;
 end test0007;

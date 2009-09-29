@@ -1,31 +1,31 @@
-with lua.lib;
+with Lua.Lib;
 
-package body test is
+package body Test is
 
-  procedure init (file : string) is
+  procedure Init (File : String) is
   begin
-    lua_context := lua.open;
-    if lua_context = lua.state_error then
-      lua_err_string := su.to_unbounded_string ("could not open lua");
-      raise program_error;
+    Lua_Context := Lua.Open;
+    if Lua_Context = Lua.State_Error then
+      Lua_Err_String := UB_Strings.To_Unbounded_String ("could not open Lua");
+      raise Program_Error;
     end if;
 
-    lua.lib.open_base (lua_context);
+    Lua.Lib.Open_Base (Lua_Context);
 
-    lua_err := lua.load_file (lua_context, file);
-    if lua_err /= lua.lua_error_none then
-      lua_err_string := su.to_unbounded_string (lua.to_string (lua_context, -1));
-      raise program_error;
+    Lua_Err := Lua.Load_File (Lua_Context, File);
+    if Lua_Err /= Lua.Lua_Error_None then
+      Lua_Err_String := UB_Strings.To_Unbounded_String (Lua.To_String (Lua_Context, -1));
+      raise Program_Error;
     end if;
 
-    lua_err := lua.pcall (lua_context, 0, 1, 0);
-    if lua_err /= lua.lua_error_none then
-      lua_err_string := su.to_unbounded_string (lua.to_string (lua_context, -1));
-      raise program_error;
+    Lua_Err := Lua.PCall (Lua_Context, 0, 1, 0);
+    if Lua_Err /= Lua.Lua_Error_None then
+      Lua_Err_String := UB_Strings.To_Unbounded_String (Lua.To_String (Lua_Context, -1));
+      raise Program_Error;
     end if;
 
-    lua.load.set_lua (loader_access, lua_context);
-    lua.load.set_file (loader_access, "test.lua");
-  end init;
+    Lua.Load.Set_Lua (Loader_Access, Lua_Context);
+    Lua.Load.Set_File (Loader_Access, "test.lua");
+  end Init;
 
-end test;
+end Test;

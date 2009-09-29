@@ -1,25 +1,25 @@
-with ada.text_io;
-with lua;
-with test;
+with Ada.Text_IO;
+with Lua;
+with Test;
 
 procedure test0009 is
-  package io renames ada.text_io;
+  package IO renames Ada.Text_IO;
 begin
-  test.init ("test0009.lua");
+  Test.Init ("test0009.lua");
 
   declare
-    procedure proc (context : test.load.state_access_t) is
+    procedure Process (Context : Test.Load.State_Access_t) is
     begin
-      io.put_line ("--");
-      io.put_line (lua.type_name (test.load.key_type (context)));
-      io.put_line (test.su.to_string (test.load.key (context)));
-    end proc;
+      IO.Put_Line ("--");
+      IO.Put_Line (Lua.Type_Name (Test.Load.Key_Type (Context)));
+      IO.Put_Line (Test.UB_Strings.To_String (Test.Load.Key (Context)));
+    end Process;
   begin
-    test.load.table_iterate (test.loader_access, proc'access);
+    Test.Load.Table_Iterate (Test.Loader_Access, Process'Access);
   end;
 
 exception
-  when test.load.load_error =>
-    io.put_line ("fail: " & test.load.error_string (test.loader_access));
-    raise test.load.load_error;
+  when Test.Load.Load_Error =>
+    IO.Put_Line ("fail: " & Test.Load.Error_String (Test.Loader_Access));
+    raise Test.Load.Load_Error;
 end test0009;

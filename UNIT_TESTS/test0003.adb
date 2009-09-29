@@ -1,22 +1,22 @@
-with ada.strings.unbounded;
-with ada.text_io;
-with test;
+with Ada.Strings.Unbounded;
+with Ada.Text_IO;
+with Test;
 
 procedure test0003 is
-  package io renames ada.text_io;
-  package su renames ada.strings.unbounded;
+  package IO renames Ada.Text_IO;
+  package UB_Strings renames Ada.Strings.Unbounded;
 begin
-  test.init ("test0003.lua");
+  Test.Init ("test0003.lua");
 
   declare
-    x : constant su.unbounded_string :=
-      test.load.named_local (test.loader_access, "x");
+    x : constant UB_Strings.Unbounded_String :=
+      Test.Load.Named_Local (Test.Loader_Access, "x");
   begin
-    io.put_line ("x: " & su.to_string (x));
+    IO.Put_Line ("x: " & UB_Strings.To_String (x));
   end;
 
 exception
-  when test.load.load_error =>
-    io.put_line ("fail: " & test.load.error_string (test.loader_access));
-    raise test.load.load_error;
+  when Test.Load.Load_Error =>
+    IO.Put_Line ("fail: " & Test.Load.Error_String (Test.Loader_Access));
+    raise Test.Load.Load_Error;
 end test0003;

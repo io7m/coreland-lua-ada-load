@@ -1,20 +1,22 @@
-with ada.strings.unbounded;
-with lua;
-with lua.load;
+with Ada.Strings.Unbounded;
+with Lua;
+with Lua.Load;
 
-package test is
-  package su renames ada.strings.unbounded;
-  package load renames lua.load;
+package Test is
 
-  lua_err        : lua.error_t;
-  lua_context    : lua.state_t;
-  lua_err_string : su.unbounded_string;
+  package UB_Strings renames Ada.Strings.Unbounded;
+  package Load       renames Lua.Load;
 
-  loader        : aliased lua.load.state_t;
-  loader_access : constant lua.load.state_access_t := loader'access;
+  Lua_Err        : Lua.Error_t;
+  Lua_Context    : Lua.State_t;
+  Lua_Err_String : UB_Strings.Unbounded_String;
 
-  use type lua.state_t;
-  use type lua.error_t;
+  Loader        : aliased Lua.Load.State_t;
+  Loader_Access : constant Lua.Load.State_Access_t := Loader'Access;
 
-  procedure init (file : string);
-end test;
+  use type Lua.State_t;
+  use type Lua.Error_t;
+
+  procedure Init (File : in String);
+
+end Test;

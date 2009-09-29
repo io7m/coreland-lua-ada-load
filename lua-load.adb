@@ -1,436 +1,514 @@
-with ada.strings;
-with ada.strings.fixed;
+with Ada.Strings;
+with Ada.Strings.Fixed;
 
-package body lua.load is
-  package s renames ada.strings;
-  package sf renames ada.strings.fixed;
+package body Lua.Load is
+  package Strings reNames Ada.Strings;
+  package Fixed_Strings reNames Ada.Strings.Fixed;
 
-  -- add a name component
-  procedure add_name_component
-    (state : in state_access_t;
-     name  : in string) is
+  --
+  -- Add a Name component.
+  --
+
+  procedure Add_Name_Component
+    (State : in State_Access_t;
+     Name  : in String) is
   begin
-    if su.length (state.name_code) /= 0 then
-      su.append (state.name_code, ".");
+    if UB_Strings.Length (State.all.Name_Code) /= 0 then
+      UB_Strings.Append (State.all.Name_Code, ".");
     end if;
-    su.append (state.name_code, name);
-    state.name_depth := state.name_depth + 1;
-  end add_name_component;
+    UB_Strings.Append (State.all.Name_Code, Name);
+    State.all.Name_Depth := State.all.Name_Depth + 1;
+  end Add_Name_Component;
 
-  -- remove a name component
-  procedure remove_name_component (state : in state_access_t) is
-    len : constant natural := su.length (state.name_code);
-    dot : natural          := su.index (state.name_code, ".", len, s.backward);
+  --
+  -- Remove a Name component.
+  --
+
+  procedure Remove_Name_Component (State : in State_Access_t) is
+    Length : constant Natural := UB_Strings.Length (State.all.Name_Code);
+    Dot    :          Natural := UB_Strings.Index (State.all.Name_Code, ".", Length, Strings.Backward);
   begin
-    if dot /= 0 then dot := dot - 1; end if;
-    su.head (state.name_code, dot);
-    state.name_depth := state.name_depth - 1;
-  end remove_name_component;
+    if Dot /= 0 then
+      Dot := Dot - 1;
+    end if;
 
-  type target_t is (target_key, target_value);
+    UB_Strings.Head (State.all.Name_Code, Dot);
+    State.all.Name_Depth := State.all.Name_Depth - 1;
+  end Remove_Name_Component;
 
-  function target_name (target : in target_t) return string is
+  type Target_t is
+    (Target_Key,
+     Target_Value);
+
+  function Target_Name (Target : in Target_t) return String is
   begin
-    case target is
-      when target_key => return "key";
-      when target_value => return "value";
+    case Target is
+      when Target_Key   => return "Key";
+      when Target_Value => return "value";
     end case;
-  end target_name;
-
-  -- type error
-  procedure type_error
-    (state    : in state_access_t;
-     target   : in target_t;
-     expected : in lua.type_t;
-     name     : in string := "") is
-  begin
-    state.err_string := su.to_unbounded_string ("");
-    if su.length (state.name_code) /= 0 then
-      su.append (state.err_string, su.to_string (state.name_code) & ": ");
-    end if;
-    if name /= "" then
-      su.append (state.err_string, name & ": ");
-    end if;
-    su.append (state.err_string,
-      target_name (target) & ": not a " & lua.type_name (expected));
-    raise load_error with su.to_string (state.err_string);
-  end;
+  end Target_Name;
 
   --
-  -- Public API
+  -- Raise type error exception.
   --
 
-  -- set lua state
-  procedure set_lua
-    (state     : in state_access_t;
-     lua_state : in lua.state_t) is
+  procedure Type_Error
+    (State    : in State_Access_t;
+     Target   : in Target_t;
+     Expected : in Lua.Type_t;
+     Name     : in String := "") is
   begin
-    state.lua_state := lua_state;
-  end set_lua;
-
-  -- set filename
-  procedure set_file
-    (state   : in state_access_t;
-     file    : in string) is
-  begin
-    state.name_file := su.to_unbounded_string (file);
-  end set_file;
-
-  -- get key type
-  function key_type (state : in state_access_t) return lua.type_t is
-  begin
-    return lua.type_of (state.lua_state, -2);
-  end key_type;
-
-  -- check if key is of type key_type
-  function key_type_is
-    (state  : in state_access_t;
-     k_type : in lua.type_t) return boolean is
-  begin
-    return key_type (state) = k_type;
-  end key_type_is;
-
-  -- get value type
-  function value_type (state : in state_access_t) return lua.type_t is
-  begin
-    return lua.type_of (state.lua_state, -1);
-  end value_type;
-
-  -- check if value is of type value_type
-  function value_type_is
-    (state  : in state_access_t;
-     v_type : in lua.type_t) return boolean is
-  begin
-    return value_type (state) = v_type;
-  end value_type_is;
-
-  -- get key on stack as number
-  function key (state : in state_access_t) return long_float is
-  begin
-    if key_type_is (state, lua.t_number) = false then
-      type_error
-        (state    => state,
-         target   => target_key,
-         expected => lua.t_number);
+    State.all.Err_String := UB_Strings.To_Unbounded_String ("");
+    if UB_Strings.Length (State.all.Name_Code) /= 0 then
+      UB_Strings.Append (State.all.Err_String, UB_Strings.To_String (State.all.Name_Code) & ": ");
     end if;
-    return long_float (lua.to_number (state.lua_state, -2));
-  end key;
-
-  function key (state : in state_access_t) return long_integer is
-    temp_float : constant long_float := key (state);
-  begin
-    return long_integer (temp_float);
-  end key;
-
-  -- get key on stack as string
-  function key (state : in state_access_t) return ustring_t is
-  begin
-    if key_type_is (state, lua.t_string) = false then
-      type_error
-        (state    => state,
-         target   => target_key,
-         expected => lua.t_string);
+    if Name /= "" then
+      UB_Strings.Append (State.all.Err_String, Name & ": ");
     end if;
-    return su.to_unbounded_string (lua.to_string (state.lua_state, -2));
-  end key;
+    UB_Strings.Append (State.all.Err_String,
+      Target_Name (Target) & ": not a " & Lua.Type_Name (Expected));
+    raise Load_Error with UB_Strings.To_String (State.all.Err_String);
+  end Type_Error;
 
-  -- get number on stack, error on invalid type.
-  function local (state : in state_access_t) return long_float is
+  --
+  -- Public API.
+  --
+
+  --
+  -- Set Lua interpreter state.
+  --
+
+  procedure Set_Lua
+    (State     : in State_Access_t;
+     Lua_State : in Lua.State_t) is
   begin
-    if value_type_is (state, lua.t_number) = false then
-      lua.pop (state.lua_state, 1);
-      type_error
-        (state    => state,
-         target   => target_value,
-         expected => lua.t_number);
+    State.all.Lua_State := Lua_State;
+  end Set_Lua;
+
+  --
+  -- Set file name.
+  --
+
+  procedure Set_File
+    (State   : in State_Access_t;
+     File    : in String) is
+  begin
+    State.all.Name_File := UB_Strings.To_Unbounded_String (File);
+  end Set_File;
+
+  --
+  -- Get key type.
+  --
+
+  function Key_Type (State : in State_Access_t) return Lua.Type_t is
+  begin
+    return Lua.Type_Of (State.all.Lua_State, -2);
+  end Key_Type;
+
+  --
+  -- Check if Key is of type Key_Type.
+  --
+
+  function Key_Type_Is
+    (State      : in State_Access_t;
+     Type_Value : in Lua.Type_t) return Boolean is
+  begin
+    return Key_Type (State) = Type_Value;
+  end Key_Type_Is;
+
+  --
+  -- Get value type.
+  --
+
+  function Value_Type (State : in State_Access_t) return Lua.Type_t is
+  begin
+    return Lua.Type_Of (State.all.Lua_State, -1);
+  end Value_Type;
+
+  --
+  -- Check if value is of type Value_Type.
+  --
+
+  function Value_Type_Is
+    (State      : in State_Access_t;
+     Type_Value : in Lua.Type_t) return Boolean is
+  begin
+    return Value_Type (State) = Type_Value;
+  end Value_Type_Is;
+
+  --
+  -- Get key on stack as number.
+  --
+
+  function Key (State : in State_Access_t) return Long_Float is
+  begin
+    if Key_Type_Is (State, Lua.T_Number) = False then
+      Type_Error
+        (State    => State,
+         Target   => Target_Key,
+         Expected => Lua.T_Number);
     end if;
-    return long_float (lua.to_number (state.lua_state, -1));
-  end local;
+    return Long_Float (Lua.To_Number (State.all.Lua_State, -2));
+  end Key;
 
-  function local (state : in state_access_t) return long_integer is
+  function Key (State : in State_Access_t) return Long_Integer is
+    Temp_Float : constant Long_Float := Key (State);
   begin
-    if value_type_is (state, lua.t_number) = false then
-      lua.pop (state.lua_state, 1);
-      type_error
-        (state    => state,
-         target   => target_value,
-         expected => lua.t_number);
+    return Long_Integer (Temp_Float);
+  end Key;
+
+  --
+  -- Get key on stack as string.
+  --
+
+  function Key (State : in State_Access_t) return UString_t is
+  begin
+    if Key_Type_Is (State, Lua.T_String) = False then
+      Type_Error
+        (State    => State,
+         Target   => Target_Key,
+         Expected => Lua.T_String);
     end if;
-    return long_integer (lua.to_number (state.lua_state, -1));
-  end local;
+    return UB_Strings.To_Unbounded_String (Lua.To_String (State.all.Lua_State, -2));
+  end Key;
 
-  -- get number on stack, return default on nil, error on invalid type.
-  function local_cond
-    (state   : in state_access_t;
-     default : in long_float := 0.0) return long_float is
+  --
+  -- Get number on stack, error on invalid type.
+  --
+
+  function Local (State : in State_Access_t) return Long_Float is
   begin
-    if value_type_is (state, lua.t_nil) then
-      lua.pop (state.lua_state, 1);
-      return default;
+    if Value_Type_Is (State, Lua.T_Number) = False then
+      Lua.Pop (State.all.Lua_State, 1);
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Expected => Lua.T_Number);
     end if;
-    return local (state);
-  end local_cond;
+    return Long_Float (Lua.To_Number (State.all.Lua_State, -1));
+  end Local;
 
-  function local_cond
-    (state   : in state_access_t;
-     default : in long_integer := 0) return long_integer is
+  function Local (State : in State_Access_t) return Long_Integer is
   begin
-    return long_integer (local_cond
-      (state   => state,
-       default => long_float (default)));
-  end local_cond;
-
-  -- get string on stack, error on invalid type.
-  function local (state : in state_access_t) return ustring_t is
-  begin
-    if value_type_is (state, lua.t_string) = false then
-      lua.pop (state.lua_state, 1);
-      type_error
-        (state    => state,
-         target   => target_value,
-         expected => lua.t_string);
+    if Value_Type_Is (State, Lua.T_Number) = False then
+      Lua.Pop (State.all.Lua_State, 1);
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Expected => Lua.T_Number);
     end if;
-    return su.to_unbounded_string (lua.to_string (state.lua_state, -1));
-  end local;
+    return Long_Integer (Lua.To_Number (State.all.Lua_State, -1));
+  end Local;
 
-  -- get string on stack, return default on nil, error on invalid type.
-  function local_cond
-    (state   : in state_access_t;
-     default : in string := "") return ustring_t is
+  --
+  -- Get number on stack, return Default on nil, raise error on invalid type.
+  --
+
+  function Local_Conditional
+    (State   : in State_Access_t;
+     Default : in Long_Float := 0.0) return Long_Float is
   begin
-    if value_type_is (state, lua.t_nil) then
-      lua.pop (state.lua_state, 1);
-      return su.to_unbounded_string (default);
+    if Value_Type_Is (State, Lua.T_Nil) then
+      Lua.Pop (State.all.Lua_State, 1);
+      return Default;
     end if;
-    return local (state);
-  end local_cond;
+    return Local (State);
+  end Local_Conditional;
 
-  -- get named numeric field, error on invalid type.
-  function named_local
-    (state : in state_access_t;
-     name  : in string) return long_float is
+  function Local_Conditional
+    (State   : in State_Access_t;
+     Default : in Long_Integer := 0) return Long_Integer is
   begin
-    lua.get_field (state.lua_state, -1, name);
-    if value_type_is (state, lua.t_number) = false then
-      lua.pop (state.lua_state, 1);
-      type_error
-        (state    => state,
-         target   => target_value,
-         name     => name,
-         expected => lua.t_number);
+    return Long_Integer (Local_Conditional
+      (State   => State,
+       Default => Long_Float (Default)));
+  end Local_Conditional;
+
+  --
+  -- Get string on stack, error on invalid type.
+  --
+
+  function Local (State : in State_Access_t) return UString_t is
+  begin
+    if Value_Type_Is (State, Lua.T_String) = False then
+      Lua.Pop (State.all.Lua_State, 1);
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Expected => Lua.T_String);
+    end if;
+    return UB_Strings.To_Unbounded_String (Lua.To_String (State.all.Lua_State, -1));
+  end Local;
+
+  --
+  -- Get string on stack, return Default on nil, raise error on invalid type.
+  --
+
+  function Local_Conditional
+    (State   : in State_Access_t;
+     Default : in String := "") return UString_t is
+  begin
+    if Value_Type_Is (State, Lua.T_Nil) then
+      Lua.Pop (State.all.Lua_State, 1);
+      return UB_Strings.To_Unbounded_String (Default);
+    end if;
+    return Local (State);
+  end Local_Conditional;
+
+  --
+  -- Get named numeric field, raise error on invalid type.
+  --
+
+  function Named_Local
+    (State : in State_Access_t;
+     Name  : in String) return Long_Float is
+  begin
+    Lua.Get_Field (State.all.Lua_State, -1, Name);
+    if Value_Type_Is (State, Lua.T_Number) = False then
+      Lua.Pop (State.all.Lua_State, 1);
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Name     => Name,
+         Expected => Lua.T_Number);
     end if;
     declare
-      num : constant long_float :=
-        long_float (lua.to_number (state.lua_state, -1));
+      Number : constant Long_Float :=
+        Long_Float (Lua.To_Number (State.all.Lua_State, -1));
     begin
-      lua.pop (state.lua_state, 1);
-      return num;
+      Lua.Pop (State.all.Lua_State, 1);
+      return Number;
     end;
-  end named_local;
+  end Named_Local;
 
-  function named_local
-    (state   : in state_access_t;
-     name    : in string) return long_integer
+  function Named_Local
+    (State   : in State_Access_t;
+     Name    : in String) return Long_Integer
   is
-    temp_float : constant long_float := (named_local
-      (state => state,
-       name  => name));
+    Temp_Float : constant Long_Float := (Named_Local
+      (State => State,
+       Name  => Name));
   begin
-    return long_integer (temp_float);
-  end named_local;
+    return Long_Integer (Temp_Float);
+  end Named_Local;
 
-  -- get named numeric field if defined, return default on nil, error on other type
-  function named_local_cond
-    (state   : in state_access_t;
-     name    : in string;
-     default : in long_float := 0.0) return long_float is
+  --
+  -- Get named numeric field if defined, return Default on nil, raise
+  -- error on other type.
+  --
+
+  function Named_Local_Conditional
+    (State   : in State_Access_t;
+     Name    : in String;
+     Default : in Long_Float := 0.0) return Long_Float is
   begin
-    lua.get_field (state.lua_state, -1, name);
+    Lua.Get_Field (State.all.Lua_State, -1, Name);
 
-    if value_type_is (state, lua.t_nil) then
-      lua.pop (state.lua_state, 1);
-      return default;
+    if Value_Type_Is (State, Lua.T_Nil) then
+      Lua.Pop (State.all.Lua_State, 1);
+      return Default;
     end if;
 
-    if value_type_is (state, lua.t_number) = false then
-      lua.pop (state.lua_state, 1);
-      type_error
-        (state    => state,
-         target   => target_value,
-         name     => name,
-         expected => lua.t_number);
-    end if;
-
-    declare
-      num : constant long_float :=
-        long_float (lua.to_number (state.lua_state, -1));
-    begin
-      lua.pop (state.lua_state, 1);
-      return num;
-    end;
-  end named_local_cond;
-
-  function named_local_cond
-    (state   : in state_access_t;
-     name    : in string;
-     default : in long_integer := 0) return long_integer is
-  begin
-    return long_integer (named_local_cond
-      (state   => state,
-       name    => name,
-       default => long_float (default)));
-  end named_local_cond;
-
-  -- get named string field, error on other type.
-  function named_local
-    (state : in state_access_t;
-     name  : in string) return ustring_t is
-  begin
-    lua.get_field (state.lua_state, -1, name);
-
-    if value_type_is (state, lua.t_string) = false then
-      lua.pop (state.lua_state, 1);
-      type_error
-        (state    => state,
-         target   => target_value,
-         name     => name,
-         expected => lua.t_string);
+    if Value_Type_Is (State, Lua.T_Number) = False then
+      Lua.Pop (State.all.Lua_State, 1);
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Name     => Name,
+         Expected => Lua.T_Number);
     end if;
 
     declare
-      str : constant string := lua.to_string (state.lua_state, -1);
-      us  : constant ustring_t := su.to_unbounded_string (str);
+      Number : constant Long_Float :=
+        Long_Float (Lua.To_Number (State.all.Lua_State, -1));
     begin
-      lua.pop (state.lua_state, 1);
-      return us;
+      Lua.Pop (State.all.Lua_State, 1);
+      return Number;
     end;
-  end named_local;
+  end Named_Local_Conditional;
 
-  -- get string if defined, error on other type
-  function named_local_cond
-    (state   : in state_access_t;
-     name    : in string;
-     default : in string := "") return ustring_t is
+  function Named_Local_Conditional
+    (State   : in State_Access_t;
+     Name    : in String;
+     Default : in Long_Integer := 0) return Long_Integer is
   begin
-    lua.get_field (state.lua_state, -1, name);
+    return Long_Integer (Named_Local_Conditional
+      (State   => State,
+       Name    => Name,
+       Default => Long_Float (Default)));
+  end Named_Local_Conditional;
 
-    if value_type_is (state, lua.t_nil) then
-      lua.pop (state.lua_state, 1);
-      return su.to_unbounded_string (default);
-    end if;
+  --
+  -- Get named string field, raise error on other type.
+  --
 
-    if value_type_is (state, lua.t_string) = false then
-      lua.pop (state.lua_state, 1);
-      type_error
-        (state    => state,
-         target   => target_value,
-         name     => name,
-         expected => lua.t_string);
+  function Named_Local
+    (State : in State_Access_t;
+     Name  : in String) return UString_t is
+  begin
+    Lua.Get_Field (State.all.Lua_State, -1, Name);
+
+    if Value_Type_Is (State, Lua.T_String) = False then
+      Lua.Pop (State.all.Lua_State, 1);
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Name     => Name,
+         Expected => Lua.T_String);
     end if;
 
     declare
-      str : constant string := lua.to_string (state.lua_state, -1);
-      us  : constant ustring_t := su.to_unbounded_string (str);
+      Str : constant String    := Lua.To_String (State.all.Lua_State, -1);
+      US  : constant UString_t := UB_Strings.To_Unbounded_String (Str);
     begin
-      lua.pop (state.lua_state, 1);
-      return us;
+      Lua.Pop (State.all.Lua_State, 1);
+      return US;
     end;
-  end named_local_cond;
+  end Named_Local;
 
-  -- push table 'name' onto stack
-  procedure table_start
-    (state : in state_access_t;
-     name  : in string) is
+  --
+  -- Get string if defined, raise error on other type.
+  --
+
+  function Named_Local_Conditional
+    (State   : in State_Access_t;
+     Name    : in String;
+     Default : in String := "") return UString_t is
   begin
-    lua.get_field (state.lua_state, -1, name);
-    if value_type_is (state, lua.t_table) = false then
-      type_error
-        (state    => state,
-         target   => target_value,
-         name     => name,
-         expected => lua.t_table);
-    end if;
-    add_name_component (state, name);
-  end table_start;
+    Lua.Get_Field (State.all.Lua_State, -1, Name);
 
-  -- remove table from stack
-  procedure table_end (state : in state_access_t) is
+    if Value_Type_Is (State, Lua.T_Nil) then
+      Lua.Pop (State.all.Lua_State, 1);
+      return UB_Strings.To_Unbounded_String (Default);
+    end if;
+
+    if Value_Type_Is (State, Lua.T_String) = False then
+      Lua.Pop (State.all.Lua_State, 1);
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Name     => Name,
+         Expected => Lua.T_String);
+    end if;
+
+    declare
+      Str : constant String := Lua.To_String (State.all.Lua_State, -1);
+      US  : constant UString_t := UB_Strings.To_Unbounded_String (Str);
+    begin
+      Lua.Pop (State.all.Lua_State, 1);
+      return US;
+    end;
+  end Named_Local_Conditional;
+
+  --
+  -- Push table 'Name' onto stack.
+  --
+
+  procedure Table_Start
+    (State : in State_Access_t;
+     Name  : in String) is
   begin
-    if value_type_is (state, lua.t_table) = false then
-      type_error
-        (state    => state,
-         target   => target_value,
-         expected => lua.t_table);
+    Lua.Get_Field (State.all.Lua_State, -1, Name);
+    if Value_Type_Is (State, Lua.T_Table) = False then
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Name     => Name,
+         Expected => Lua.T_Table);
     end if;
-    remove_name_component (state);
-    lua.pop (state.lua_state, 1);
-  end table_end;
+    Add_Name_Component (State, Name);
+  end Table_Start;
 
-  -- iterate over table, calling proc for each value
-  procedure table_iterate
-    (state : in state_access_t;
-     proc  : not null access procedure
-       (state : in state_access_t))
+  --
+  -- Remove table from stack.
+  --
+
+  procedure Table_End (State : in State_Access_t) is
+  begin
+    if Value_Type_Is (State, Lua.T_Table) = False then
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Expected => Lua.T_Table);
+    end if;
+    Remove_Name_Component (State);
+    Lua.Pop (State.all.Lua_State, 1);
+  end Table_End;
+
+  --
+  -- Iterate over table, calling Process for each value.
+  --
+
+  procedure Table_Iterate
+    (State    : in State_Access_t;
+     Process  : not null access procedure
+       (State : in State_Access_t))
   is
-    findex : long_float;
-    index  : integer;
-    added  : boolean;
+    F_Index : Long_Float;
+    Index  : Integer;
+    Added  : Boolean;
   begin
-    if value_type_is (state, lua.t_table) = false then
-      type_error
-        (state    => state,
-         target   => target_value,
-         expected => lua.t_table);
+    if Value_Type_Is (State, Lua.T_Table) = False then
+      Type_Error
+        (State    => State,
+         Target   => Target_Value,
+         Expected => Lua.T_Table);
     end if;
- 
-    -- iterate over table keys
-    lua.push_nil (state.lua_state);
-    while (lua.next (state.lua_state, -2) /= 0) loop
-      added := false;
 
-      -- build string name based on key type and value
-      case key_type (state) is
-        when lua.t_number =>
-          findex := key (state);
-          index := integer (findex);
+    -- Iterate over table keys.
+    Lua.Push_Nil (State.all.Lua_State);
+    while (Lua.Next (State.all.Lua_State, -2) /= 0) loop
+      Added := False;
+
+      -- build String Name based on Key type and value
+      case Key_Type (State) is
+        when Lua.T_Number =>
+          F_Index := Key (State);
+          Index   := Integer (F_Index);
           declare
-            str : constant string :=
-              "[" & sf.trim (integer'image (index), s.left) & "]";
+            Str : constant String :=
+              "[" & Fixed_Strings.Trim (Integer'Image (Index), Strings.Left) & "]";
           begin
-            add_name_component (state, str);
-            added := true;
+            Add_Name_Component (State, Str);
+            Added := True;
           end;
-        when lua.t_string =>
-          add_name_component (state, su.to_string (key (state)));
-          added := true;
+        when Lua.T_String =>
+          Add_Name_Component (State, UB_Strings.To_String (Key (State)));
+          Added := True;
         when others =>
           null;
       end case;
 
-      -- call proc ()
+      -- Call Process ()
       begin
-        proc (state);
+        Process (State);
       exception
-        when load_error =>
-          if added then remove_name_component (state); end if;
+        when Load_Error =>
+          if Added then
+            Remove_Name_Component (State);
+          end if;
           raise;
       end;
 
-      if added then remove_name_component (state); end if;
-      lua.pop (state.lua_state, 1);
+      if Added then
+        Remove_Name_Component (State);
+      end if;
+      Lua.Pop (State.all.Lua_State, 1);
     end loop;
-  end table_iterate;
+  end Table_Iterate;
 
-  -- return error string
+  --
+  -- Return error string.
+  --
 
-  function error_string (state : in state_access_t) return string is
+  function Error_String (State : in State_Access_t) return String is
   begin
-    return su.to_string (state.err_string);
-  end error_string;
+    return UB_Strings.To_String (State.all.Err_String);
+  end Error_String;
 
-  function name_code (state : in state_access_t) return string is
+  function Name_Code (State : in State_Access_t) return String is
   begin
-    return su.to_string (state.name_code);
-  end name_code;
+    return UB_Strings.To_String (State.all.Name_Code);
+  end Name_Code;
 
-end lua.load;
+end Lua.Load;

@@ -1,125 +1,141 @@
-with ada.strings.unbounded;
+with Ada.Strings.Unbounded;
 
-package lua.load is
-  package su renames ada.strings.unbounded;
+package Lua.Load is
+  package UB_Strings reNames Ada.Strings.Unbounded;
 
-  -- types
-  subtype ustring_t is su.unbounded_string;
+  --
+  -- Types.
+  --
 
-  type state_t is limited private;
-  type state_access_t is access all state_t;
+  subtype UString_t is UB_Strings.Unbounded_String;
 
-  -- api functions
+  type State_t is limited private;
+  type State_Access_t is access all State_t;
 
-  procedure set_lua
-    (state     : in state_access_t;
-     lua_state : in lua.state_t);
+  --
+  -- API subprograms.
+  --
 
-  procedure set_file
-    (state : in state_access_t;
-     file  : in string);
+  procedure Set_Lua
+    (State     : in State_Access_t;
+     Lua_State : in Lua.State_t);
 
-  -- type retrieval
+  procedure Set_File
+    (State : in State_Access_t;
+     File  : in String);
 
-  function key_type (state : in state_access_t) return lua.type_t;
-  pragma inline (key_type);
+  --
+  -- Type retrieval.
+  --
 
-  function key_type_is
-    (state  : in state_access_t;
-     k_type : in lua.type_t) return boolean;
-  pragma inline (key_type_is);
+  function Key_Type (State : in State_Access_t) return Lua.Type_t;
+  pragma Inline (Key_Type);
 
-  function value_type (state : in state_access_t) return lua.type_t;
-  pragma inline (value_type);
+  function Key_Type_Is
+    (State      : in State_Access_t;
+     Type_Value : in Lua.Type_t) return Boolean;
+  pragma Inline (Key_Type_Is);
 
-  function value_type_is
-    (state  : in state_access_t;
-     v_type : in lua.type_t) return boolean;
-  pragma inline (value_type_is);
+  function Value_Type (State : in State_Access_t) return Lua.Type_t;
+  pragma Inline (Value_Type);
 
-  function key (state: in state_access_t) return long_float;
-  function key (state: in state_access_t) return long_integer;
-  function key (state: in state_access_t) return ustring_t;
+  function Value_Type_Is
+    (State      : in State_Access_t;
+     Type_Value : in Lua.Type_t) return Boolean;
+  pragma Inline (Value_Type_Is);
 
-  -- named local retrieval
+  function Key (State : in State_Access_t) return Long_Float;
+  function Key (State : in State_Access_t) return Long_Integer;
+  function Key (State : in State_Access_t) return UString_t;
 
-  function named_local
-    (state : in state_access_t;
-     name  : in string) return ustring_t;
+  --
+  -- Named local retrieval.
+  --
 
-  function named_local
-    (state : in state_access_t;
-     name  : in string) return long_float;
+  function Named_Local
+    (State : in State_Access_t;
+     Name  : in String) return UString_t;
 
-  function named_local
-    (state : in state_access_t;
-     name  : in string) return long_integer;
+  function Named_Local
+    (State : in State_Access_t;
+     Name  : in String) return Long_Float;
 
-  function named_local_cond
-    (state   : in state_access_t;
-     name    : in string;
-     default : in string := "") return ustring_t;
+  function Named_Local
+    (State : in State_Access_t;
+     Name  : in String) return Long_Integer;
 
-  function named_local_cond
-    (state   : in state_access_t;
-     name    : in string;
-     default : in long_float := 0.0) return long_float;
+  function Named_Local_Conditional
+    (State   : in State_Access_t;
+     Name    : in String;
+     Default : in String := "") return UString_t;
 
-  function named_local_cond
-    (state   : in state_access_t;
-     name    : in string;
-     default : in long_integer := 0) return long_integer;
+  function Named_Local_Conditional
+    (State   : in State_Access_t;
+     Name    : in String;
+     Default : in Long_Float := 0.0) return Long_Float;
 
-  function local (state : in state_access_t) return long_float;
+  function Named_Local_Conditional
+    (State   : in State_Access_t;
+     Name    : in String;
+     Default : in Long_Integer := 0) return Long_Integer;
 
-  function local (state : in state_access_t) return long_integer;
+  function Local (State : in State_Access_t) return Long_Float;
 
-  function local (state : in state_access_t) return ustring_t;
+  function Local (State : in State_Access_t) return Long_Integer;
 
-  function local_cond
-    (state   : in state_access_t;
-     default : in long_float := 0.0) return long_float;
+  function Local (State : in State_Access_t) return UString_t;
 
-  function local_cond
-    (state   : in state_access_t;
-     default : in long_integer := 0) return long_integer;
+  function Local_Conditional
+    (State   : in State_Access_t;
+     Default : in Long_Float := 0.0) return Long_Float;
 
-  function local_cond
-    (state   : in state_access_t;
-     default : in string := "") return ustring_t;
+  function Local_Conditional
+    (State   : in State_Access_t;
+     Default : in Long_Integer := 0) return Long_Integer;
 
-  -- table handling
+  function Local_Conditional
+    (State   : in State_Access_t;
+     Default : in String := "") return UString_t;
 
-  procedure table_start
-    (state : in state_access_t;
-     name  : in string);
+  --
+  -- Table handling.
+  --
 
-  procedure table_iterate
-    (state : in state_access_t;
-     proc  : not null access procedure
-      (state : in state_access_t));
+  procedure Table_Start
+    (State : in State_Access_t;
+     Name  : in String);
 
-  procedure table_end (state: in state_access_t);
+  procedure Table_Iterate
+    (State   : in State_Access_t;
+     Process : not null access procedure
+      (State : in State_Access_t));
 
-  -- error strings
+  procedure Table_End (State : in State_Access_t);
 
-  function error_string (state : in state_access_t) return string;
-  pragma inline (error_string);
+  --
+  -- Error strings.
+  --
 
-  function name_code (state : in state_access_t) return string;
-  pragma inline (name_code);
+  function Error_String (State : in State_Access_t) return String;
+  pragma Inline (Error_String);
 
-  -- exceptions
-  load_error: exception;
+  function Name_Code (State : in State_Access_t) return String;
+  pragma Inline (Name_Code);
+
+  --
+  -- Exceptions.
+  --
+
+  Load_Error : exception;
 
 private
 
-  type state_t is record
-    lua_state  : lua.state_t;
-    name_depth : natural := 0;
-    name_code  : ustring_t;
-    name_file  : ustring_t;
-    err_string : ustring_t;
+  type State_t is record
+    Lua_State  : Lua.State_t;
+    Name_Depth : Natural := 0;
+    Name_Code  : UString_t;
+    Name_File  : UString_t;
+    Err_String : UString_t;
   end record;
 
-end lua.load;
+end Lua.Load;

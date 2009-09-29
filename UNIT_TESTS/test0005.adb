@@ -1,21 +1,21 @@
-with ada.text_io;
-with test;
+with Ada.Text_IO;
+with Test;
 
 procedure test0005 is
-  package io renames ada.text_io;
+  package IO renames Ada.Text_IO;
 begin
-  test.init ("test0005.lua");
+  Test.Init ("test0005.lua");
 
-  test.load.table_start (test.loader_access, "x");
+  Test.Load.Table_Start (Test.Loader_Access, "x");
   declare
-    x : constant long_float := test.load.named_local (test.loader_access, "y");
+    x : constant Long_Float := Test.Load.Named_Local (Test.Loader_Access, "y");
   begin
-    io.put_line ("x.y: " & integer'image (integer (x)));
+    IO.Put_Line ("x.y: " & Integer'Image (Integer (x)));
   end;
-  test.load.table_end (test.loader_access);
+  Test.Load.Table_End (Test.Loader_Access);
 
 exception
-  when test.load.load_error =>
-    io.put_line ("fail: " & test.load.error_string (test.loader_access));
-    raise test.load.load_error;
+  when Test.Load.Load_Error =>
+    IO.Put_Line ("fail: " & Test.Load.Error_String (Test.Loader_Access));
+    raise Test.Load.Load_Error;
 end test0005;
