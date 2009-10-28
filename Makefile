@@ -3,7 +3,7 @@
 default: all
 
 all:\
-UNIT_TESTS/test.ali UNIT_TESTS/test.o UNIT_TESTS/test0001 \
+local UNIT_TESTS/test.ali UNIT_TESTS/test.o UNIT_TESTS/test0001 \
 UNIT_TESTS/test0001.ali UNIT_TESTS/test0001.o UNIT_TESTS/test0002 \
 UNIT_TESTS/test0002.ali UNIT_TESTS/test0002.o UNIT_TESTS/test0003 \
 UNIT_TESTS/test0003.ali UNIT_TESTS/test0003.o UNIT_TESTS/test0004 \
@@ -37,43 +37,60 @@ install-dryrun: installer conf-sosuffix
 install-check: instchk conf-sosuffix
 	./instchk
 
+# Mkf-local
+local: flags-lua-ada libs-lua-ada-S libs-lua-S
+	./check-deps
+
+local_pre:
+local_clean:
+
 # Mkf-test
 tests:
 	(cd UNIT_TESTS && make tests)
 tests_clean:
 	(cd UNIT_TESTS && make clean)
 
-# -- SYSDEPS start
+#----------------------------------------------------------------------
+# SYSDEPS start
+
 flags-lua-ada:
 	@echo SYSDEPS lua-ada-flags run create flags-lua-ada 
-	@(cd SYSDEPS/modules/lua-ada-flags && ./run)
+	@(cd SYSDEPS && ./sd-run modules/lua-ada-flags)
 libs-lua-ada-S:
 	@echo SYSDEPS lua-ada-libs-S run create libs-lua-ada-S 
-	@(cd SYSDEPS/modules/lua-ada-libs-S && ./run)
+	@(cd SYSDEPS && ./sd-run modules/lua-ada-libs-S)
 libs-lua-S:
 	@echo SYSDEPS lua-libs-S run create libs-lua-S 
-	@(cd SYSDEPS/modules/lua-libs-S && ./run)
+	@(cd SYSDEPS && ./sd-run modules/lua-libs-S)
+_sd_sysinfo.h:
+	@echo SYSDEPS sd-sysinfo run create _sd_sysinfo.h 
+	@(cd SYSDEPS && ./sd-run modules/sd-sysinfo)
 
 
 lua-ada-flags_clean:
 	@echo SYSDEPS lua-ada-flags clean flags-lua-ada 
-	@(cd SYSDEPS/modules/lua-ada-flags && ./clean)
+	@(cd SYSDEPS && ./sd-clean modules/lua-ada-flags)
 lua-ada-libs-S_clean:
 	@echo SYSDEPS lua-ada-libs-S clean libs-lua-ada-S 
-	@(cd SYSDEPS/modules/lua-ada-libs-S && ./clean)
+	@(cd SYSDEPS && ./sd-clean modules/lua-ada-libs-S)
 lua-libs-S_clean:
 	@echo SYSDEPS lua-libs-S clean libs-lua-S 
-	@(cd SYSDEPS/modules/lua-libs-S && ./clean)
+	@(cd SYSDEPS && ./sd-clean modules/lua-libs-S)
+sd-sysinfo_clean:
+	@echo SYSDEPS sd-sysinfo clean _sd_sysinfo.h 
+	@(cd SYSDEPS && ./sd-clean modules/sd-sysinfo)
 
 
 sysdeps_clean:\
 lua-ada-flags_clean \
 lua-ada-libs-S_clean \
 lua-libs-S_clean \
+sd-sysinfo_clean \
 
 
-# -- SYSDEPS end
 
+# SYSDEPS end
+#----------------------------------------------------------------------
 
 UNIT_TESTS/test.ads:\
 lua-load.ali
@@ -379,7 +396,7 @@ conf-systype
 mk-systype:\
 conf-cc conf-ld
 
-clean-all: sysdeps_clean tests_clean obj_clean ext_clean
+clean-all: sysdeps_clean tests_clean local_clean obj_clean ext_clean
 clean: obj_clean
 obj_clean:
 	rm -f UNIT_TESTS/test.ali UNIT_TESTS/test.o UNIT_TESTS/test0001 \

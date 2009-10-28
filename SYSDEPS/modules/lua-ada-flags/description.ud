@@ -1,0 +1,2 @@
+(para "This module determines the compiler flags required to compile against "
+  (link-ext "http://coreland.ath.cx/code/lua-ada" "lua-ada"))
